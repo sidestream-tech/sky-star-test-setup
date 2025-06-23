@@ -1,66 +1,66 @@
-## Foundry
+# Sky Star Test Deployment
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Easily deploy the Sky allocation system and Spark ALM controller to any EVM-compatible chain, including all required mock contracts. This repository is designed to help Sky Stars test and validate contracts quickly. 
 
-Foundry consists of:
+## Included Deployments
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- [`dss-allocator`](https://github.com/sky-ecosystem/dss-allocator)
+- [`spark-alm-controller`](https://github.com/sparkdotfi/spark-alm-controller)
+- Mock contracts: `vat`, `usdsJoin`, `usds`
 
-## Documentation
+## Prerequisites
 
-https://book.getfoundry.sh/
+- [Foundry](https://book.getfoundry.sh/) must be installed.
 
-## Usage
 
-### Build
+## Quick Start
 
-```shell
-$ forge build
-```
+### 1. Prepare Environment
 
-### Test
+- Copy the example environment file:
+    ```sh
+    cp .env.dev .env
+    ```
+- Edit `.env` and update the variables as described below.
 
-```shell
-$ forge test
-```
+### 2. Simulate Deployment
 
-### Format
+- Run a dry run (default: Avalanche Fuji):
+    ```sh
+    make deploy-dry-run
+    ```
 
-```shell
-$ forge fmt
-```
+### 3. Deploy to Network
 
-### Gas Snapshots
+- Broadcast the deployment (default: Avalanche Fuji):
+    ```sh
+    make deploy-run
+    ```
 
-```shell
-$ forge snapshot
-```
+### 4. Document Results
 
-### Anvil
+- Commit the generated output folder to record deployed contract addresses.
 
-```shell
-$ anvil
-```
 
-### Deploy
+## Environment Variables
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+| Variable              | Description                                                                 |
+|-----------------------|-----------------------------------------------------------------------------|
+| `PRIVATE_KEY`         | Deployer's private key (used as admin for all contracts)                    |
+| `FOUNDRY_ROOT_CHAINID`| Chain ID for deployment                                                     |
+| `FUJI_RPC_URL`        | RPC URL for Avalanche Fuji                                                  |
+| `ILK_NAME`            | ILK name to use                                                             |
 
-### Cast
 
-```shell
-$ cast <subcommand>
-```
+## Deploying to Other Chains
 
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+1. Update `FOUNDRY_ROOT_CHAINID` in `.env`.
+2. Add the new RPC URL in `.env`.
+3. Add the new `rpc_endpoints` in [`foundry.toml`](./foundry.toml), e.g.:
+     ```toml
+     mainnet = "${MAINNET_RPC_URL}"
+     ```
+4. Specify the chain when running the script, e.g.:
+     ```sh
+     make deploy-dry-run chain='mainnet'
+     ```
