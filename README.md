@@ -1,4 +1,4 @@
-# Sky Star Test Deployment
+# Sky Star Test Setup
 
 Easily deploy the Sky allocation system and Spark ALM controller to any EVM-compatible chain, including all required mock contracts. This repository is designed to help Sky Stars test and validate contracts quickly. 
 
@@ -23,21 +23,25 @@ Easily deploy the Sky allocation system and Spark ALM controller to any EVM-comp
     ```
 - Edit `.env` and update the variables as described below.
 
-### 2. Simulate Deployment
+### 2. Update ilk name
+
+- Update `ilk` in [input.json](/script/input/43113/input.json)
+
+### 3. Simulate Deployment
 
 - Run a dry run (default: Avalanche Fuji):
     ```sh
     make deploy-dry-run
     ```
 
-### 3. Deploy to Network
+### 4. Deploy to Network
 
 - Broadcast the deployment (default: Avalanche Fuji):
     ```sh
     make deploy-run
     ```
 
-### 4. Document Results
+### 5. Document Results
 
 - Commit the generated output folder to record deployed contract addresses.
 
@@ -49,7 +53,7 @@ Easily deploy the Sky allocation system and Spark ALM controller to any EVM-comp
 | `PRIVATE_KEY`         | Deployer's private key (used as admin for all contracts)                    |
 | `FOUNDRY_ROOT_CHAINID`| Chain ID for deployment                                                     |
 | `FUJI_RPC_URL`        | RPC URL for Avalanche Fuji                                                  |
-| `ILK_NAME`            | ILK name to use                                                             |
+
 
 
 ## Deploying to Other Chains
