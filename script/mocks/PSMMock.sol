@@ -7,7 +7,6 @@ pragma solidity ^0.8.21;
  * https://github.com/sparkdotfi/spark-alm-controller/blob/7f0a473951e4c5528d52ee442461662976c4a947/test/unit/mocks/MockPSM3.sol
  */
 contract PSMMock {
-
     address public gem;
 
     uint256 public to18ConversionFactor = 1e12;
@@ -15,5 +14,4 @@ contract PSMMock {
     constructor(address _gem) {
         gem = _gem;
     }
-
 }

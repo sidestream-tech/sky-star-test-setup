@@ -24,15 +24,15 @@ struct MockContracts {
 }
 
 contract Deploy is Script {
-    using stdJson     for string;
+    using stdJson for string;
 
     function setUp() public {}
 
     function run() public {
-        string memory config = ScriptTools.loadConfig('input');
+        string memory config = ScriptTools.loadConfig("input");
 
         VmSafe.Wallet memory deployer = vm.createWallet(vm.envUint("PRIVATE_KEY"));
-        bytes32 ilk = ScriptTools.stringToBytes32(config.readString( ".ilk"));
+        bytes32 ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
         address admin = config.readAddress(".admin");
         MockContracts memory mocks;
 
@@ -48,15 +48,16 @@ contract Deploy is Script {
 
         // 2. Deploy AllocatorSystem
         AllocatorSharedInstance memory sharedInstance = AllocatorDeploy.deployShared(deployer.addr, admin);
-        AllocatorIlkInstance memory ilkInstance = AllocatorDeploy.deployIlk(deployer.addr, admin, sharedInstance.roles, ilk, address(mocks.usdsJoin));
+        AllocatorIlkInstance memory ilkInstance =
+            AllocatorDeploy.deployIlk(deployer.addr, admin, sharedInstance.roles, ilk, address(mocks.usdsJoin));
 
         // 3. Deploy MainnetController
         MainnetControllerDeploy.deployFull({
-            admin   : admin,
-            vault   : ilkInstance.vault,
-            psm     : address(mocks.psm),
-            daiUsds : address(mocks.daiUsds),
-            cctp    : config.readAddress(".cctpTokenMessenger")
+            admin: admin,
+            vault: ilkInstance.vault,
+            psm: address(mocks.psm),
+            daiUsds: address(mocks.daiUsds),
+            cctp: config.readAddress(".cctpTokenMessenger")
         });
 
         vm.stopBroadcast();
