@@ -1,5 +1,6 @@
 {
   "admin": "0x05c60a7Ea994964CF1D56c1E77B43A02afB33cCD",
   "cctpTokenMessenger": "0xeb08f243E5d3FCFF26A9E38Ae5520A669f4019d0",
-  "ilk": "ALLOCATOR_STAR_A"
+  "ilk": "ALLOCATOR_STAR_A",
+  "usdcUnitSize": 10
 }

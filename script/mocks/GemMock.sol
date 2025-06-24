@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.21;
 
 /**
  * @dev This contract is not intended for production use and should only be used for testing purpose.
@@ -7,13 +7,28 @@ pragma solidity ^0.8.16;
  * https://github.com/sky-ecosystem/dss-allocator/blob/226584d3b179d98025497815adb4ea585ea0102d/test/mocks/GemMock.sol
  */
 contract GemMock {
+    mapping(address => uint256) public wards;
+
+    function rely(address usr) external auth {
+        wards[usr] = 1;
+    }
+
+    function deny(address usr) external auth {
+        wards[usr] = 0;
+    }
+
+    modifier auth() {
+        require(wards[msg.sender] == 1, "Gem/not-authorized");
+        _;
+    }
+
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
     uint256 public totalSupply;
 
-    constructor(uint256 initialSupply) {
-        mint(msg.sender, initialSupply);
+    constructor() {
+        wards[msg.sender] = 1;
     }
 
     function approve(address spender, uint256 value) external returns (bool) {
@@ -54,7 +69,7 @@ contract GemMock {
         return true;
     }
 
-    function mint(address to, uint256 value) public {
+    function mint(address to, uint256 value) external auth {
         unchecked {
             balanceOf[to] = balanceOf[to] + value;
         }

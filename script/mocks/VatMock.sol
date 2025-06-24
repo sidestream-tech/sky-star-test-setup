@@ -1,12 +1,27 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.21;
 
 /**
  * @dev This contract is not intended for production use and should only be used for testing purpose.
- * This contract was copied from
+ * This contract was edited from
  * https://github.com/sky-ecosystem/dss-allocator/blob/226584d3b179d98025497815adb4ea585ea0102d/test/mocks/VatMock.sol
  */
 contract VatMock {
+    mapping(address => uint256) public wards;
+
+    function rely(address usr) external auth {
+        wards[usr] = 1;
+    }
+
+    function deny(address usr) external auth {
+        wards[usr] = 0;
+    }
+
+    modifier auth() {
+        require(wards[msg.sender] == 1, "Vat/not-authorized");
+        _;
+    }
+
     uint256 public Art;
     uint256 public rate = 10 ** 27;
     uint256 public line = 20_000_000 * 10 ** 45;
@@ -20,6 +35,10 @@ contract VatMock {
     mapping(bytes32 => mapping(address => Urn)) public urns;
     mapping(bytes32 => mapping(address => uint256)) public gem;
     mapping(address => uint256) public dai;
+
+    constructor() {
+        wards[msg.sender] = 1;
+    }
 
     function ilks(bytes32) external view returns (uint256, uint256, uint256, uint256, uint256) {
         return (Art, rate, 0, line, 0);
@@ -50,11 +69,11 @@ contract VatMock {
         dai[dst] = dai[dst] + rad;
     }
 
-    function slip(bytes32 ilk, address usr, int256 wad) external {
+    function slip(bytes32 ilk, address usr, int256 wad) external auth {
         gem[ilk][usr] = wad >= 0 ? gem[ilk][usr] + uint256(wad) : gem[ilk][usr] - uint256(-wad);
     }
 
-    function grab(bytes32 i, address u, address v, address, int256 dink, int256 dart) external {
+    function grab(bytes32 i, address u, address v, address, int256 dink, int256 dart) external auth {
         Urn storage urn = urns[i][u];
 
         urn.ink = dink >= 0 ? urn.ink + uint256(dink) : urn.ink - uint256(-dink);
@@ -63,7 +82,7 @@ contract VatMock {
         gem[i][v] = dink >= 0 ? gem[i][v] - uint256(dink) : gem[i][v] + uint256(-dink);
     }
 
-    function fold(uint256 rate_) external {
+    function fold(uint256 rate_) external auth {
         rate = rate + rate_;
     }
 }
