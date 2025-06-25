@@ -115,7 +115,15 @@ library SetUpAllLib {
                 vault_: vault,
                 psm_: psm,
                 daiUsds_: daiUsds,
-                cctp_: cctp
+                cctp_: cctp,
+                addresses: MainnetController.Addresses({
+                    USDS: usds,
+                    USDE: address(0),
+                    SUSDE: address(0),
+                    USTB: address(0),
+                    ETHENA_MINTER: address(0),
+                    SUPERSTATE_REDEMPTION: address(0)
+                })
             })
         );
     }
