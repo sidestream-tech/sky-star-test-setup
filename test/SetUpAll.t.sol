@@ -92,7 +92,7 @@ contract SetUpAllTest is Test {
         IGemMock usds = IGemMock(mocks.usds);
         address almProxy = controllerInstance.almProxy;
 
-        // Mint USDS to the deployer address
+        // Mint USDS 
         vm.assertEq(usds.balanceOf(almProxy), 0, "Initial USDS balance should be zero");
         vm.prank(deployer);
         MainnetControllerLike(controllerInstance.controller).mintUSDS(10 * WAD); // Mint 10 USDS
@@ -104,7 +104,7 @@ contract SetUpAllTest is Test {
         IVatMock vat = IVatMock(mocks.vat);
         address almProxy = controllerInstance.almProxy;
 
-        // Mint USDS to the deployer address
+        // Mint USDS 
         vm.assertEq(usds.balanceOf(almProxy), 0, "Initial USDS balance should be zero");
         vm.prank(deployer);
         MainnetControllerLike(controllerInstance.controller).mintUSDS(10 * WAD); // Mint 10 USDS
