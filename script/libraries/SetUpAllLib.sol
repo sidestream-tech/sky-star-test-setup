@@ -66,7 +66,9 @@ library SetUpAllLib {
 
         // 2. Rely Usds on UsdsJoin
         IGemMock(mocks.usds).rely(mocks.usdsJoin);
-        // 3. Rely Vat on Jug
+        // 3. Rely Dai on DaiJoin
+        IGemMock(mocks.dai).rely(mocks.daiJoin);
+        // 4. Rely Vat on Jug
         IVatMock(mocks.vat).rely(mocks.jug);
 
         return mocks;
