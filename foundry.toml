@@ -11,5 +11,8 @@ fs_permissions = [
 ]
 [rpc_endpoints]
 fuji = "${FUJI_RPC_URL}"
+[etherscan]
+# https://testnet.snowtrace.io/documentation/recipes/foundry-verification
+fuji = { key = "verifyContract", chain = 43113, url = "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan" }
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

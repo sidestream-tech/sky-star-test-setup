@@ -6,7 +6,7 @@ import {GemMock} from "script/mocks/GemMock.sol";
 
 /**
  * @dev This contract is not intended for production use and should only be used for testing purpose.
- * This contract was copied from
+ * This contract was edited from
  * https://github.com/sky-ecosystem/dss-allocator/blob/226584d3b179d98025497815adb4ea585ea0102d/test/mocks/UsdsJoinMock.sol
  */
 contract DaiJoinMock {
