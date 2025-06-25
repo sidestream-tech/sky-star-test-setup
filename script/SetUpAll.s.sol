@@ -65,7 +65,7 @@ contract SetUpAll is Script {
 
         // 4. Set up ALM controller
         address[] memory relayers = new address[](1);
-        relayers[0] = deployer.addr; 
+        relayers[0] = deployer.addr;
         SetUpAllLib.setUpAlmController(
             ALMSetUpInstance({
                 controllerInstance: controllerInstance,
@@ -79,7 +79,11 @@ contract SetUpAll is Script {
 
         // 5. Set up rate limits for the controller
         SetUpAllLib.setMainnetControllerRateLimits(
-            RateLimitsInstance({controllerInstance: controllerInstance, usdcUnitSize: config.readUint(".usdcUnitSize")})
+            RateLimitsInstance({
+                controllerInstance: controllerInstance,
+                usdcUnitSize: config.readUint(".usdcUnitSize"),
+                sUsds: address(mocks.sUsds)
+            })
         );
 
         vm.stopBroadcast();

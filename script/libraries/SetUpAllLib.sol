@@ -11,6 +11,7 @@ import {MainnetControllerInit} from "spark-alm-controller/deploy/MainnetControll
 import {MainnetControllerDeploy} from "spark-alm-controller/deploy/ControllerDeploy.sol";
 import {ControllerInstance} from "spark-alm-controller/deploy/ControllerInstance.sol";
 import {IRateLimits} from "spark-alm-controller/src/interfaces/IRateLimits.sol";
+import {RateLimitHelpers} from "spark-alm-controller/src/RateLimitHelpers.sol";
 import {VatMock} from "script/mocks/VatMock.sol";
 import {GemMock} from "script/mocks/GemMock.sol";
 import {UsdsJoinMock} from "script/mocks/UsdsJoinMock.sol";
@@ -19,9 +20,12 @@ import {PSMMock} from "script/mocks/PSMMock.sol";
 import {JugMock} from "script/mocks/JugMock.sol";
 import {IVatMock} from "script/mocks/interfaces/IVatMock.sol";
 import {IGemMock} from "script/mocks/interfaces/IGemMock.sol";
+import {ERC4626Mock} from "script/mocks/ERC4626Mock.sol";
 
 interface MainnetControllerLike {
     function LIMIT_USDS_MINT() external returns (bytes32);
+    function LIMIT_4626_DEPOSIT() external returns (bytes32);
+    function LIMIT_4626_WITHDRAW() external returns (bytes32);
 }
 
 interface RegistryLike {
@@ -37,6 +41,7 @@ struct MockContracts {
     address daiUsds;
     address psm;
     address jug;
+    address sUsds;
 }
 
 struct AllocatorSetUpInstance {
@@ -59,6 +64,7 @@ struct ALMSetUpInstance {
 struct RateLimitsInstance {
     ControllerInstance controllerInstance;
     uint256 usdcUnitSize;
+    address sUsds;
 }
 
 library SetUpAllLib {
@@ -73,6 +79,7 @@ library SetUpAllLib {
         mocks.daiUsds = address(new DaiUsdsMock(address(mocks.dai)));
         mocks.psm = address(new PSMMock(address(mocks.usds)));
         mocks.jug = address(new JugMock(VatMock(mocks.vat)));
+        mocks.sUsds = address(new ERC4626Mock(GemMock(mocks.usds)));
 
         // 2. Rely Usds on UsdsJoin
         IGemMock(mocks.usds).rely(mocks.usdsJoin);
@@ -147,5 +154,16 @@ library SetUpAllLib {
 
         // USDS mint/burn rate limits
         rateLimits.setRateLimitData(controller.LIMIT_USDS_MINT(), maxAmount18, slope18);
+
+        // sUsds deposit/withdraw rate limits
+        bytes32 depositKey = controller.LIMIT_4626_DEPOSIT();
+        bytes32 withdrawKey = controller.LIMIT_4626_WITHDRAW();
+
+        rateLimits.setRateLimitData(
+            RateLimitHelpers.makeAssetKey(depositKey, rateLimitsInstance.sUsds), maxAmount18, slope18
+        );
+        rateLimits.setRateLimitData(
+            RateLimitHelpers.makeAssetKey(withdrawKey, rateLimitsInstance.sUsds), type(uint256).max, 0
+        );
     }
 }
