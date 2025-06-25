@@ -12,6 +12,9 @@ import {MainnetControllerDeploy} from "spark-alm-controller/deploy/ControllerDep
 import {ControllerInstance} from "spark-alm-controller/deploy/ControllerInstance.sol";
 import {IRateLimits} from "spark-alm-controller/src/interfaces/IRateLimits.sol";
 import {RateLimitHelpers} from "spark-alm-controller/src/RateLimitHelpers.sol";
+import {ALMProxy} from "spark-alm-controller/src/ALMProxy.sol";
+import {RateLimits} from "spark-alm-controller/src/RateLimits.sol";
+import {MainnetController} from "spark-alm-controller/src/MainnetController.sol";
 import {VatMock} from "script/mocks/VatMock.sol";
 import {GemMock} from "script/mocks/GemMock.sol";
 import {UsdsJoinMock} from "script/mocks/UsdsJoinMock.sol";
@@ -41,30 +44,7 @@ struct MockContracts {
     address daiUsds;
     address psm;
     address jug;
-    address sUsds;
-}
-
-struct AllocatorSetUpInstance {
-    bytes32 ilk;
-    AllocatorIlkInstance ilkInstance;
-    AllocatorSharedInstance sharedInstance;
-    address admin;
-    MockContracts mocks;
-}
-
-struct ALMSetUpInstance {
-    ControllerInstance controllerInstance;
-    AllocatorIlkInstance ilkInstance;
-    MockContracts mocks;
-    address admin;
-    address cctpTokenMessenger;
-    address[] relayers;
-}
-
-struct RateLimitsInstance {
-    ControllerInstance controllerInstance;
-    uint256 usdcUnitSize;
-    address sUsds;
+    address susds;
 }
 
 library SetUpAllLib {
@@ -79,7 +59,7 @@ library SetUpAllLib {
         mocks.daiUsds = address(new DaiUsdsMock(address(mocks.dai)));
         mocks.psm = address(new PSMMock(address(mocks.usds)));
         mocks.jug = address(new JugMock(VatMock(mocks.vat)));
-        mocks.sUsds = address(new ERC4626Mock(GemMock(mocks.usds)));
+        mocks.susds = address(new ERC4626Mock(GemMock(mocks.usds)));
 
         // 2. Rely Usds on UsdsJoin
         IGemMock(mocks.usds).rely(mocks.usdsJoin);
@@ -89,18 +69,21 @@ library SetUpAllLib {
         return mocks;
     }
 
-    function setUpAllocatorSystem(AllocatorSetUpInstance memory setupInstance) internal {
-        AllocatorSharedInstance memory shared = setupInstance.sharedInstance;
-        AllocatorIlkInstance memory ilkInstance = setupInstance.ilkInstance;
-        MockContracts memory mocks = setupInstance.mocks;
+    function setUpAllocatorSystem(
+        bytes32 ilk,
+        AllocatorIlkInstance memory ilkInstance,
+        AllocatorSharedInstance memory sharedInstance,
+        address admin,
+        MockContracts memory mocks
+    ) internal {
         IVatMock vat = IVatMock(mocks.vat);
 
         // 1. Add buffer to registry
-        RegistryLike(shared.registry).file(setupInstance.ilk, "buffer", ilkInstance.buffer);
+        RegistryLike(sharedInstance.registry).file(ilk, "buffer", ilkInstance.buffer);
 
         // 2. Initiate the allocator vault
-        vat.slip(setupInstance.ilk, ilkInstance.vault, int256(10 ** 12 * WAD));
-        vat.grab(setupInstance.ilk, ilkInstance.vault, ilkInstance.vault, address(0), int256(10 ** 12 * WAD), 0);
+        vat.slip(ilk, ilkInstance.vault, int256(10 ** 12 * WAD));
+        vat.grab(ilk, ilkInstance.vault, ilkInstance.vault, address(0), int256(10 ** 12 * WAD), 0);
 
         // 3. Set up Jug on AllocatorVault (to draw/wipe)
         VaultLike(ilkInstance.vault).file("jug", mocks.jug);
@@ -111,13 +94,37 @@ library SetUpAllLib {
         );
 
         // 5. Register
-        RolesLike(shared.roles).setIlkAdmin(setupInstance.ilk, setupInstance.admin);
+        RolesLike(sharedInstance.roles).setIlkAdmin(ilk, admin);
     }
 
-    function setUpAlmController(ALMSetUpInstance memory setupInstance) internal {
-        ControllerInstance memory controllerInstance = setupInstance.controllerInstance;
-        AllocatorIlkInstance memory ilkInstance = setupInstance.ilkInstance;
-        MockContracts memory mocks = setupInstance.mocks;
+    function deployAlmController(address admin, address vault, address psm, address daiUsds, address cctp, address usds)
+        internal
+        returns (ControllerInstance memory controllerInstance)
+    {
+        controllerInstance.almProxy = address(new ALMProxy(admin));
+        controllerInstance.rateLimits = address(new RateLimits(admin));
+
+        controllerInstance.controller = address(
+            new MainnetController({
+                admin_: admin,
+                proxy_: controllerInstance.almProxy,
+                rateLimits_: controllerInstance.rateLimits,
+                vault_: vault,
+                psm_: psm,
+                daiUsds_: daiUsds,
+                cctp_: cctp
+            })
+        );
+    }
+
+    function setUpAlmController(
+        ControllerInstance memory controllerInstance,
+        AllocatorIlkInstance memory ilkInstance,
+        MockContracts memory mocks,
+        address admin,
+        address cctpTokenMessenger,
+        address[] memory relayers
+    ) internal {
         MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](0);
 
         MainnetControllerInit.initAlmSystem(
@@ -126,44 +133,42 @@ library SetUpAllLib {
             controllerInstance,
             MainnetControllerInit.ConfigAddressParams({
                 freezer: address(0),
-                relayers: setupInstance.relayers,
+                relayers: relayers,
                 oldController: address(0)
             }),
             MainnetControllerInit.CheckAddressParams({
-                admin: setupInstance.admin,
+                admin: admin,
                 proxy: controllerInstance.almProxy,
                 rateLimits: controllerInstance.rateLimits,
                 vault: ilkInstance.vault,
                 psm: mocks.psm,
                 daiUsds: mocks.daiUsds,
-                cctp: setupInstance.cctpTokenMessenger
+                cctp: cctpTokenMessenger
             }),
             mintRecipients
         );
     }
 
     // Rate limits value copied from https://github.com/sparkdotfi/spark-alm-controller/blob/7f0a473951e4c5528d52ee442461662976c4a947/script/staging/FullStagingDeploy.s.sol#L381
-    function setMainnetControllerRateLimits(RateLimitsInstance memory rateLimitsInstance) internal {
-        ControllerInstance memory controllerInstance = rateLimitsInstance.controllerInstance;
-
+    function setMainnetControllerRateLimits(
+        ControllerInstance memory controllerInstance,
+        uint256 usdcUnitSize,
+        address susds
+    ) internal {
         IRateLimits rateLimits = IRateLimits(controllerInstance.rateLimits);
         MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
-        uint256 USDC_UNIT_SIZE = rateLimitsInstance.usdcUnitSize * 1e6;
+        uint256 USDC_UNIT_SIZE = usdcUnitSize * 1e6;
         uint256 maxAmount18 = USDC_UNIT_SIZE * 1e12 * 5;
         uint256 slope18 = USDC_UNIT_SIZE * 1e12 / 4 hours;
 
         // USDS mint/burn rate limits
         rateLimits.setRateLimitData(controller.LIMIT_USDS_MINT(), maxAmount18, slope18);
 
-        // sUsds deposit/withdraw rate limits
+        // susds deposit/withdraw rate limits
         bytes32 depositKey = controller.LIMIT_4626_DEPOSIT();
         bytes32 withdrawKey = controller.LIMIT_4626_WITHDRAW();
 
-        rateLimits.setRateLimitData(
-            RateLimitHelpers.makeAssetKey(depositKey, rateLimitsInstance.sUsds), maxAmount18, slope18
-        );
-        rateLimits.setRateLimitData(
-            RateLimitHelpers.makeAssetKey(withdrawKey, rateLimitsInstance.sUsds), type(uint256).max, 0
-        );
+        rateLimits.setRateLimitData(RateLimitHelpers.makeAssetKey(depositKey, susds), maxAmount18, slope18);
+        rateLimits.setRateLimitData(RateLimitHelpers.makeAssetKey(withdrawKey, susds), type(uint256).max, 0);
     }
 }

@@ -7,14 +7,7 @@ import {ScriptTools} from "dss-test/ScriptTools.sol";
 import {AllocatorDeploy} from "dss-allocator/deploy/AllocatorDeploy.sol";
 import {AllocatorSharedInstance, AllocatorIlkInstance} from "dss-allocator/deploy/AllocatorInstances.sol";
 import {MainnetControllerDeploy} from "spark-alm-controller/deploy/ControllerDeploy.sol";
-import {ControllerInstance} from "spark-alm-controller/deploy/ControllerInstance.sol";
-import {
-    SetUpAllLib,
-    MockContracts,
-    AllocatorSetUpInstance,
-    ALMSetUpInstance,
-    RateLimitsInstance
-} from "script/libraries/SetUpAllLib.sol";
+import {SetUpAllLib, MockContracts, ControllerInstance} from "script/libraries/SetUpAllLib.sol";
 
 interface MainnetControllerLike {
     function LIMIT_USDS_MINT() external returns (bytes32);
@@ -44,47 +37,42 @@ contract SetUpAll is Script {
             AllocatorDeploy.deployIlk(deployer.addr, admin, sharedInstance.roles, ilk, address(mocks.usdsJoin));
 
         // 2. Set up AllocatorSystem and set up
-        SetUpAllLib.setUpAllocatorSystem(
-            AllocatorSetUpInstance({
-                ilk: ilk,
-                ilkInstance: ilkInstance,
-                sharedInstance: sharedInstance,
-                mocks: mocks,
-                admin: admin
-            })
-        );
+        SetUpAllLib.setUpAllocatorSystem({
+            ilk: ilk,
+            ilkInstance: ilkInstance,
+            sharedInstance: sharedInstance,
+            mocks: mocks,
+            admin: admin
+        });
 
         // 3. Deploy MainnetController
-        ControllerInstance memory controllerInstance = MainnetControllerDeploy.deployFull({
+        ControllerInstance memory controllerInstance = SetUpAllLib.deployAlmController({
             admin: admin,
             vault: ilkInstance.vault,
-            psm: address(mocks.psm),
-            daiUsds: address(mocks.daiUsds),
-            cctp: cctpTokenMessenger
+            psm: mocks.psm,
+            daiUsds: mocks.daiUsds,
+            cctp: cctpTokenMessenger,
+            usds: mocks.usds
         });
 
         // 4. Set up ALM controller
         address[] memory relayers = new address[](1);
         relayers[0] = deployer.addr;
-        SetUpAllLib.setUpAlmController(
-            ALMSetUpInstance({
-                controllerInstance: controllerInstance,
-                ilkInstance: ilkInstance,
-                mocks: mocks,
-                admin: admin,
-                relayers: relayers,
-                cctpTokenMessenger: cctpTokenMessenger
-            })
-        );
+        SetUpAllLib.setUpAlmController({
+            controllerInstance: controllerInstance,
+            ilkInstance: ilkInstance,
+            mocks: mocks,
+            admin: admin,
+            relayers: relayers,
+            cctpTokenMessenger: cctpTokenMessenger
+        });
 
         // 5. Set up rate limits for the controller
-        SetUpAllLib.setMainnetControllerRateLimits(
-            RateLimitsInstance({
-                controllerInstance: controllerInstance,
-                usdcUnitSize: config.readUint(".usdcUnitSize"),
-                sUsds: address(mocks.sUsds)
-            })
-        );
+        SetUpAllLib.setMainnetControllerRateLimits({
+            controllerInstance: controllerInstance,
+            usdcUnitSize: config.readUint(".usdcUnitSize"),
+            susds: address(mocks.susds)
+        });
 
         vm.stopBroadcast();
     }
