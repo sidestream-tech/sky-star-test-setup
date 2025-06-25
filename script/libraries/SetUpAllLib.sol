@@ -18,6 +18,7 @@ import {MainnetController} from "sky-star-alm-controller/src/MainnetController.s
 import {VatMock} from "script/mocks/VatMock.sol";
 import {GemMock} from "script/mocks/GemMock.sol";
 import {UsdsJoinMock} from "script/mocks/UsdsJoinMock.sol";
+import {DaiJoinMock} from "script/mocks/DaiJoinMock.sol";
 import {DaiUsdsMock} from "script/mocks/DaiUsdsMock.sol";
 import {PSMMock} from "script/mocks/PSMMock.sol";
 import {JugMock} from "script/mocks/JugMock.sol";
@@ -41,6 +42,7 @@ struct MockContracts {
     address usds;
     address dai;
     address usdsJoin;
+    address daiJoin;
     address daiUsds;
     address psm;
     address jug;
@@ -56,8 +58,9 @@ library SetUpAllLib {
         mocks.usds = address(new GemMock());
         mocks.usdsJoin = address(new UsdsJoinMock(VatMock(mocks.vat), GemMock(mocks.usds)));
         mocks.dai = address(new GemMock());
-        mocks.daiUsds = address(new DaiUsdsMock(address(mocks.dai)));
-        mocks.psm = address(new PSMMock(address(mocks.usds)));
+        mocks.daiJoin = address(new DaiJoinMock(VatMock(mocks.vat), GemMock(mocks.dai)));
+        mocks.daiUsds = address(new DaiUsdsMock(mocks.daiJoin, mocks.usdsJoin));
+        mocks.psm = address(new PSMMock(mocks.usds));
         mocks.jug = address(new JugMock(VatMock(mocks.vat)));
         mocks.susds = address(new ERC4626Mock(GemMock(mocks.usds)));
 
