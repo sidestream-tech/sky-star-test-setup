@@ -3,7 +3,7 @@ pragma solidity ^0.8.21;
 
 /**
  * @dev This contract is not intended for production use and should only be used for testing purpose.
- * This contract was copied from
+ * This contract was edited from
  * https://github.com/sky-ecosystem/dss-allocator/blob/226584d3b179d98025497815adb4ea585ea0102d/test/mocks/GemMock.sol
  */
 contract GemMock {
@@ -26,6 +26,7 @@ contract GemMock {
     mapping(address => mapping(address => uint256)) public allowance;
 
     uint256 public totalSupply;
+    uint8 public constant decimals = 18;
 
     constructor() {
         wards[msg.sender] = 1;
