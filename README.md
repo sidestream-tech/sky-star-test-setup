@@ -6,7 +6,7 @@ Easily deploy the Sky allocation system and Spark ALM controller to any EVM-comp
 
 - [`dss-allocator`](https://github.com/sky-ecosystem/dss-allocator)
 - [`spark-alm-controller`](https://github.com/sparkdotfi/spark-alm-controller)
-- Mock contracts: `vat`, `usdsJoin`, `usds`, `jug`, `usdsDai`, `dai`, `psmLite`
+- Mock contracts: `vat`, `usdsJoin`, `usds`, `sUsds`, `jug`, `usdsDai`, `dai`, `psmLite`
 
 ## Prerequisites
 
@@ -68,3 +68,16 @@ Easily deploy the Sky allocation system and Spark ALM controller to any EVM-comp
      ```sh
      make deploy-dry-run chain='mainnet'
      ```
+
+
+### Running Tests
+
+- Run all tests:
+    ```sh
+    make test-all
+    ```
+
+- Run a specific test by name:
+    ```sh
+    make test-match match="YourTestName"
+    ```

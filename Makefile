@@ -9,3 +9,7 @@ set-up-run:
 	if [ -z "$$CHAIN" ]; then CHAIN=fuji; fi; \
 	echo "Current chain: $$CHAIN"; \
 	forge script script/SetUpAll.s.sol:SetUpAll --fork-url $$CHAIN -vv --broadcast
+
+test-all:; forge test
+
+test-match:; forge test --match-test ${match} -vvv
