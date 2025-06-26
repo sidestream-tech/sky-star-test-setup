@@ -74,13 +74,15 @@ library SetUpAllLib {
         return mocks;
     }
 
-    function setUpAllocatorSystem(
+    function setUpAllocatorAndALMController(
         bytes32 ilk,
         AllocatorIlkInstance memory ilkInstance,
         AllocatorSharedInstance memory sharedInstance,
         address admin,
-        MockContracts memory mocks
-    ) internal {
+        MockContracts memory mocks,
+        address cctp,
+        address[] memory relayers
+    ) internal returns (ControllerInstance memory controllerInstance) {
         IVatMock vat = IVatMock(mocks.vat);
 
         // 1. Add buffer to registry
@@ -100,12 +102,8 @@ library SetUpAllLib {
 
         // 5. Register
         RolesLike(sharedInstance.roles).setIlkAdmin(ilk, admin);
-    }
 
-    function deployAlmController(address admin, address vault, address psm, address daiUsds, address cctp, address usds)
-        internal
-        returns (ControllerInstance memory controllerInstance)
-    {
+        // 6. Deploy ALM controller
         controllerInstance.almProxy = address(new ALMProxy(admin));
         controllerInstance.rateLimits = address(new RateLimits(admin));
 
@@ -114,12 +112,12 @@ library SetUpAllLib {
                 admin_: admin,
                 proxy_: controllerInstance.almProxy,
                 rateLimits_: controllerInstance.rateLimits,
-                vault_: vault,
-                psm_: psm,
-                daiUsds_: daiUsds,
+                vault_: ilkInstance.vault,
+                psm_: mocks.psm,
+                daiUsds_: mocks.daiUsds,
                 cctp_: cctp,
                 addresses: MainnetController.Addresses({
-                    USDS: usds,
+                    USDS: mocks.usds,
                     USDE: address(0),
                     SUSDE: address(0),
                     USTB: address(0),
@@ -128,16 +126,8 @@ library SetUpAllLib {
                 })
             })
         );
-    }
 
-    function setUpAlmController(
-        ControllerInstance memory controllerInstance,
-        AllocatorIlkInstance memory ilkInstance,
-        MockContracts memory mocks,
-        address admin,
-        address cctpTokenMessenger,
-        address[] memory relayers
-    ) internal {
+        // 7. Set up ALM controller
         MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](0);
 
         MainnetControllerInit.initAlmSystem(
@@ -156,7 +146,7 @@ library SetUpAllLib {
                 vault: ilkInstance.vault,
                 psm: mocks.psm,
                 daiUsds: mocks.daiUsds,
-                cctp: cctpTokenMessenger
+                cctp: cctp
             }),
             mintRecipients
         );

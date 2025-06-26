@@ -21,13 +21,14 @@ contract SetUpAll is Script {
     function setUp() public {}
 
     function run() public {
-        string memory config = ScriptTools.loadConfig("input");
         VmSafe.Wallet memory deployer = vm.createWallet(vm.envUint("PRIVATE_KEY"));
-        bytes32 ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
         address admin = deployer.addr;
-        address cctpTokenMessenger = config.readAddress(".cctpTokenMessenger");
+        
+        string memory config = ScriptTools.loadConfig("input");
+        bytes32 ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
 
         vm.startBroadcast(deployer.privateKey);
+
         // 1. Deploy mock contracts
         MockContracts memory mocks = SetUpAllLib.deployMockContracts();
 
@@ -36,38 +37,21 @@ contract SetUpAll is Script {
         AllocatorIlkInstance memory ilkInstance =
             AllocatorDeploy.deployIlk(deployer.addr, admin, sharedInstance.roles, ilk, address(mocks.usdsJoin));
 
-        // 2. Set up AllocatorSystem and set up
-        SetUpAllLib.setUpAllocatorSystem({
+        // 3. Set up AllocatorSystem and Deploy and set up ALM controller
+        address[] memory relayers = new address[](1);
+        relayers[0] = config.readAddress(".relayer");
+
+        ControllerInstance memory controllerInstance = SetUpAllLib.setUpAllocatorAndALMController({
             ilk: ilk,
             ilkInstance: ilkInstance,
             sharedInstance: sharedInstance,
             mocks: mocks,
-            admin: admin
-        });
-
-        // 3. Deploy MainnetController
-        ControllerInstance memory controllerInstance = SetUpAllLib.deployAlmController({
             admin: admin,
-            vault: ilkInstance.vault,
-            psm: mocks.psm,
-            daiUsds: mocks.daiUsds,
-            cctp: cctpTokenMessenger,
-            usds: mocks.usds
+            cctp: config.readAddress(".cctpTokenMessenger"),
+            relayers: relayers
         });
 
-        // 4. Set up ALM controller
-        address[] memory relayers = new address[](1);
-        relayers[0] = config.readAddress(".relayer");
-        SetUpAllLib.setUpAlmController({
-            controllerInstance: controllerInstance,
-            ilkInstance: ilkInstance,
-            mocks: mocks,
-            admin: admin,
-            relayers: relayers,
-            cctpTokenMessenger: cctpTokenMessenger
-        });
-
-        // 5. Set up rate limits for the controller
+        // 4. Set up rate limits for the controller
         SetUpAllLib.setMainnetControllerRateLimits({
             controllerInstance: controllerInstance,
             usdcUnitSize: config.readUint(".usdcUnitSize"),
