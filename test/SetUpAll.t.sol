@@ -21,6 +21,7 @@ interface MainnetControllerLike {
 
 contract SetUpAllTest is Test {
     address deployer;
+    address relayer;
     MockContracts mocks;
     AllocatorSharedInstance sharedInstance;
     AllocatorIlkInstance ilkInstance;
@@ -31,6 +32,7 @@ contract SetUpAllTest is Test {
 
     function setUp() public {
         (deployer,) = makeAddrAndKey("deployer");
+        (relayer,) = makeAddrAndKey("relayer");
         ilk = ScriptTools.stringToBytes32("ALLOCATOR-TEST-A");
 
         vm.startPrank(deployer);
@@ -62,7 +64,7 @@ contract SetUpAllTest is Test {
 
         // 4. Set up ALM controller
         address[] memory relayers = new address[](1);
-        relayers[0] = deployer;
+        relayers[0] = relayer;
         SetUpAllLib.setUpAlmController({
             controllerInstance: controllerInstance,
             ilkInstance: ilkInstance,
@@ -91,14 +93,14 @@ contract SetUpAllTest is Test {
 
         // Mint USDS
         vm.assertEq(usds.balanceOf(almProxy), 0, "Initial USDS balance should be zero");
-        vm.prank(deployer);
+        vm.prank(relayer);
         MainnetControllerLike(controllerInstance.controller).mintUSDS(10 * WAD); // Mint 10 USDS
         vm.assertEq(usds.balanceOf(almProxy), 10 * WAD, "USDS balance after minting should be 10 WAD");
         (uint256 art,,,,) = vat.ilks(ilk);
         vm.assertEq(art, 10 * WAD, "art should be 10 WAD after minting");
 
         // Burn USDS
-        vm.prank(deployer);
+        vm.prank(relayer);
         controller.burnUSDS(5 * WAD); // Burn 5 USDS
         vm.assertEq(usds.balanceOf(almProxy), 5 * WAD, "USDS balance after burning should be 5 WAD");
         (art,,,,) = vat.ilks(ilk);
@@ -111,13 +113,13 @@ contract SetUpAllTest is Test {
         MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
 
         // Mint USDS
-        vm.prank(deployer);
+        vm.prank(relayer);
         controller.mintUSDS(10 * WAD); // Mint 10 USDS
 
         // Deposit into ERC4626
         vm.assertEq(ERC4626Mock(mocks.susds).shareBalance(almProxy), 0, "Share balance before deposit should be 0");
 
-        vm.prank(deployer);
+        vm.prank(relayer);
         controller.depositERC4626(mocks.susds, 5 * WAD); // Deposit 5 USDS
         vm.assertEq(usds.balanceOf(almProxy), 5 * WAD, "USDS balance after deposit should be 5 WAD");
         vm.assertEq(
@@ -130,7 +132,7 @@ contract SetUpAllTest is Test {
             ERC4626Mock(mocks.susds).shareBalance(almProxy), 5 * WAD, "Share balance before withdrawal should be 5 WAD"
         );
 
-        vm.prank(deployer);
+        vm.prank(relayer);
         uint256 shares = controller.withdrawERC4626(mocks.susds, 3 * WAD); // Withdraw 3 USDS
         vm.assertEq(shares, 3 * WAD, "Withdrawn shares should be 3 WAD");
         vm.assertEq(
@@ -139,7 +141,7 @@ contract SetUpAllTest is Test {
         vm.assertEq(usds.balanceOf(almProxy), 8 * WAD, "USDS balance after withdrawal should be 8 WAD");
 
         // Redeem from ERC4626
-        vm.prank(deployer);
+        vm.prank(relayer);
         shares = controller.redeemERC4626(mocks.susds, 2 * WAD); // Redeem 2 USDS
         vm.assertEq(shares, 2 * WAD, "Redeemed shares should be 2 WAD");
         vm.assertEq(

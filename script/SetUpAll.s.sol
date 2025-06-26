@@ -57,7 +57,7 @@ contract SetUpAll is Script {
 
         // 4. Set up ALM controller
         address[] memory relayers = new address[](1);
-        relayers[0] = deployer.addr;
+        relayers[0] = config.readAddress(".relayer");
         SetUpAllLib.setUpAlmController({
             controllerInstance: controllerInstance,
             ilkInstance: ilkInstance,
