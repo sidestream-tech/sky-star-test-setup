@@ -6,7 +6,6 @@ import {VmSafe} from "forge-std/Vm.sol";
 import {ScriptTools} from "dss-test/ScriptTools.sol";
 import {AllocatorDeploy} from "dss-allocator/deploy/AllocatorDeploy.sol";
 import {AllocatorSharedInstance, AllocatorIlkInstance} from "dss-allocator/deploy/AllocatorInstances.sol";
-import {MainnetControllerDeploy} from "sky-star-alm-controller/deploy/ControllerDeploy.sol";
 import {SetUpAllLib, MockContracts, ControllerInstance} from "src/libraries/SetUpAllLib.sol";
 
 interface MainnetControllerLike {

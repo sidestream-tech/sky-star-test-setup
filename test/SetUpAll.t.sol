@@ -4,7 +4,6 @@ pragma solidity ^0.8.21;
 import "forge-std/Test.sol";
 import {AllocatorDeploy} from "dss-allocator/deploy/AllocatorDeploy.sol";
 import {AllocatorSharedInstance, AllocatorIlkInstance} from "dss-allocator/deploy/AllocatorInstances.sol";
-import {MainnetControllerDeploy} from "sky-star-alm-controller/deploy/ControllerDeploy.sol";
 import {ScriptTools} from "dss-test/ScriptTools.sol";
 import {SetUpAllLib, MockContracts, ControllerInstance} from "src/libraries/SetUpAllLib.sol";
 import {IGemMock} from "src/mocks/interfaces/IGemMock.sol";

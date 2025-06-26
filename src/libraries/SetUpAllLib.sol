@@ -1,14 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.21;
 
-import {console} from "forge-std/Script.sol";
-import {VmSafe} from "forge-std/Vm.sol";
-import {ScriptTools} from "dss-test/ScriptTools.sol";
-import {AllocatorDeploy} from "dss-allocator/deploy/AllocatorDeploy.sol";
 import {RolesLike, VaultLike, BufferLike} from "dss-allocator/deploy/AllocatorInit.sol";
 import {AllocatorSharedInstance, AllocatorIlkInstance} from "dss-allocator/deploy/AllocatorInstances.sol";
 import {MainnetControllerInit} from "sky-star-alm-controller/deploy/MainnetControllerInit.sol";
-import {MainnetControllerDeploy} from "sky-star-alm-controller/deploy/ControllerDeploy.sol";
 import {ControllerInstance} from "sky-star-alm-controller/deploy/ControllerInstance.sol";
 import {IRateLimits} from "sky-star-alm-controller/src/interfaces/IRateLimits.sol";
 import {RateLimitHelpers} from "sky-star-alm-controller/src/RateLimitHelpers.sol";
