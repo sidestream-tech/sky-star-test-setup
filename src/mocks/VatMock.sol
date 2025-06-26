@@ -7,11 +7,6 @@ pragma solidity ^0.8.21;
  * https://github.com/sky-ecosystem/dss-allocator/blob/226584d3b179d98025497815adb4ea585ea0102d/test/mocks/VatMock.sol
  */
 contract VatMock {
-    // --- events ---
-    event Rely(address indexed usr);
-    event Deny(address indexed usr);
-    event File(bytes32 indexed ilk, bytes32 indexed what, address data);
-
     // --- auth ---
     mapping(address => uint256) public wards;
     function rely(address usr) external auth {
@@ -41,7 +36,6 @@ contract VatMock {
 
     constructor() {
         wards[msg.sender] = 1;
-        emit Rely(msg.sender);
     }
 
     function ilks(bytes32) external view returns (uint256, uint256, uint256, uint256, uint256) {
