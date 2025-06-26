@@ -1,12 +1,6 @@
-[submodule "lib/forge-std"]
-	path = lib/forge-std
-	url = https://github.com/foundry-rs/forge-std
 [submodule "lib/dss-allocator"]
 	path = lib/dss-allocator
 	url = https://github.com/sky-ecosystem/dss-allocator
-[submodule "lib/dss-test"]
-	path = lib/dss-test
-	url = https://github.com/sky-ecosystem/dss-test
 [submodule "lib/sky-star-alm-controller"]
 	path = lib/sky-star-alm-controller
 	url = https://github.com/sidestream-tech/sky-star-alm-controller

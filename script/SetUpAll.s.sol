@@ -7,7 +7,7 @@ import {ScriptTools} from "dss-test/ScriptTools.sol";
 import {AllocatorDeploy} from "dss-allocator/deploy/AllocatorDeploy.sol";
 import {AllocatorSharedInstance, AllocatorIlkInstance} from "dss-allocator/deploy/AllocatorInstances.sol";
 import {MainnetControllerDeploy} from "sky-star-alm-controller/deploy/ControllerDeploy.sol";
-import {SetUpAllLib, MockContracts, ControllerInstance} from "script/libraries/SetUpAllLib.sol";
+import {SetUpAllLib, MockContracts, ControllerInstance} from "src/libraries/SetUpAllLib.sol";
 
 interface MainnetControllerLike {
     function LIMIT_USDS_MINT() external returns (bytes32);
@@ -24,7 +24,7 @@ contract SetUpAll is Script {
         string memory config = ScriptTools.loadConfig("input");
         VmSafe.Wallet memory deployer = vm.createWallet(vm.envUint("PRIVATE_KEY"));
         bytes32 ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
-        address admin = config.readAddress(".admin");
+        address admin = deployer.addr;
         address cctpTokenMessenger = config.readAddress(".cctpTokenMessenger");
 
         vm.startBroadcast(deployer.privateKey);

@@ -15,16 +15,16 @@ import {RateLimitHelpers} from "sky-star-alm-controller/src/RateLimitHelpers.sol
 import {ALMProxy} from "sky-star-alm-controller/src/ALMProxy.sol";
 import {RateLimits} from "sky-star-alm-controller/src/RateLimits.sol";
 import {MainnetController} from "sky-star-alm-controller/src/MainnetController.sol";
-import {VatMock} from "script/mocks/VatMock.sol";
-import {GemMock} from "script/mocks/GemMock.sol";
-import {UsdsJoinMock} from "script/mocks/UsdsJoinMock.sol";
-import {DaiJoinMock} from "script/mocks/DaiJoinMock.sol";
-import {DaiUsdsMock} from "script/mocks/DaiUsdsMock.sol";
-import {PSMMock} from "script/mocks/PSMMock.sol";
-import {JugMock} from "script/mocks/JugMock.sol";
-import {IVatMock} from "script/mocks/interfaces/IVatMock.sol";
-import {IGemMock} from "script/mocks/interfaces/IGemMock.sol";
-import {ERC4626Mock} from "script/mocks/ERC4626Mock.sol";
+import {VatMock} from "src/mocks/VatMock.sol";
+import {GemMock} from "src/mocks/GemMock.sol";
+import {UsdsJoinMock} from "src/mocks/UsdsJoinMock.sol";
+import {DaiJoinMock} from "src/mocks/DaiJoinMock.sol";
+import {DaiUsdsMock} from "src/mocks/DaiUsdsMock.sol";
+import {PSMMock} from "src/mocks/PSMMock.sol";
+import {JugMock} from "src/mocks/JugMock.sol";
+import {IVatMock} from "src/mocks/interfaces/IVatMock.sol";
+import {IGemMock} from "src/mocks/interfaces/IGemMock.sol";
+import {ERC4626Mock} from "src/mocks/ERC4626Mock.sol";
 
 interface MainnetControllerLike {
     function LIMIT_USDS_MINT() external returns (bytes32);

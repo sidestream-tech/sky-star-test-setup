@@ -1,27 +1,27 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.21;
 
-import {IDaiJoinMock} from "./interfaces/IDaiJoinMock.sol";
-import {IUsdsJoinMock} from "./interfaces/IUsdsJoinMock.sol";
-import {IGemMock} from "./interfaces/IGemMock.sol";
-import {IVatMock} from "./interfaces/IVatMock.sol";
+import {DaiJoinMock} from "./DaiJoinMock.sol";
+import {UsdsJoinMock} from "./UsdsJoinMock.sol";
+import {GemMock} from "./GemMock.sol";
+import {VatMock} from "./VatMock.sol";
 
 /**
  * @dev This contract is not intended for production use and should only be used for testing purpose.
  */
 contract DaiUsdsMock {
-    IDaiJoinMock   public immutable daiJoin;
-    IUsdsJoinMock  public immutable usdsJoin;
-    IGemMock       public immutable dai;
-    IGemMock       public immutable usds;
+    DaiJoinMock   public immutable daiJoin;
+    UsdsJoinMock  public immutable usdsJoin;
+    GemMock       public immutable dai;
+    GemMock       public immutable usds;
 
     constructor(address daiJoin_, address usdsJoin_) {
-        daiJoin = IDaiJoinMock(daiJoin_);
-        usdsJoin = IUsdsJoinMock(usdsJoin_);
-        dai = IGemMock(daiJoin.dai());
-        usds = IGemMock(usdsJoin.usds());
+        daiJoin = DaiJoinMock(daiJoin_);
+        usdsJoin = UsdsJoinMock(usdsJoin_);
+        dai = GemMock(address(daiJoin.dai()));
+        usds = GemMock(address(usdsJoin.usds()));
 
-        IVatMock vat = IVatMock(daiJoin.vat());
+        VatMock vat = VatMock(address(daiJoin.vat()));
         vat.hope(address(daiJoin));
         vat.hope(address(usdsJoin));
     }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.21;
 
-import {VatMock} from "script/mocks/VatMock.sol";
+import {VatMock} from "src/mocks/VatMock.sol";
 
 /**
  * @dev This contract is not intended for production use and should only be used for testing purpose.
