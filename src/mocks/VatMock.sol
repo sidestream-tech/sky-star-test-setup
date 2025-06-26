@@ -8,21 +8,18 @@ pragma solidity ^0.8.21;
  */
 contract VatMock {
     // --- events ---
-
     event Rely(address indexed usr);
     event Deny(address indexed usr);
     event File(bytes32 indexed ilk, bytes32 indexed what, address data);
 
+    // --- auth ---
     mapping(address => uint256) public wards;
-
     function rely(address usr) external auth {
         wards[usr] = 1;
     }
-
     function deny(address usr) external auth {
         wards[usr] = 0;
     }
-
     modifier auth() {
         require(wards[msg.sender] == 1, "Vat/not-authorized");
         _;

@@ -7,16 +7,14 @@ pragma solidity ^0.8.21;
  * https://github.com/sky-ecosystem/dss-allocator/blob/226584d3b179d98025497815adb4ea585ea0102d/test/mocks/GemMock.sol
  */
 contract GemMock {
+    // --- auth ---
     mapping(address => uint256) public wards;
-
     function rely(address usr) external auth {
         wards[usr] = 1;
     }
-
     function deny(address usr) external auth {
         wards[usr] = 0;
     }
-
     modifier auth() {
         require(wards[msg.sender] == 1, "Gem/not-authorized");
         _;

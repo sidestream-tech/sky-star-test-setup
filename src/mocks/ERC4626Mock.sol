@@ -61,7 +61,6 @@ contract ERC4626Mock is GemMock {
     }
 
     // --- ERC4626 accounting view functions ---
-
     function totalAssets() external view returns (uint256) {
         return asset.balanceOf(address(this));
     }

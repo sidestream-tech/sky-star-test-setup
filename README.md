@@ -23,25 +23,22 @@ Easily deploy the Sky allocation system and Spark ALM controller to any EVM-comp
     ```
 - Edit `.env` and update the variables as described below.
 
-### 2. Update ilk name
 
-- Update `ilk` in [input.json](/script/input/43113/input.json)
+### 2. Simulate Transaction
 
-### 3. Simulate Transaction
-
-- Run a dry run (default: Avalanche Fuji):
+- Run a dry run:
     ```sh
-    make set-up-dry-run
+    forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv
     ```
 
-### 4. Execute transaction on Network
+### 3. Execute transaction on Network
 
-- Broadcast the deployment and setup (default: Avalanche Fuji):
+- Broadcast the deployment and setup:
     ```sh
-    make set-up-run
+    forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv --broadcast --verify --slow 
     ```
 
-### 5. Document Results
+### 4. Document Results
 
 - Commit the generated output folder to record deployed contract addresses.
 
@@ -60,13 +57,18 @@ Easily deploy the Sky allocation system and Spark ALM controller to any EVM-comp
 
 1. Update `FOUNDRY_ROOT_CHAINID` in `.env`.
 2. Add the new RPC URL in `.env`.
-3. Add the new `rpc_endpoints` in [`foundry.toml`](./foundry.toml), e.g.:
+3. Create `script/input/{CHAIN_ID}/input.json` file
+4. Add the new verification endpoint in [`foundry.toml`](./foundry.toml), e.g:
+     ```toml
+     mainnet = { key = "${ETHERSCAN_API_KEY}", chain = 1 }
+     ```
+5. Add the new `rpc_endpoints` in [`foundry.toml`](./foundry.toml), e.g.:
      ```toml
      mainnet = "${MAINNET_RPC_URL}"
      ```
-4. Specify the chain when running the script, e.g.:
+6. Specify the chain when running the script, e.g.:
      ```sh
-     make deploy-dry-run chain='mainnet'
+     forge script script/SetUpAll.s.sol:SetUpAll --fork-url ${CHAIN} -vv --broadcast --verify --slow 
      ```
 
 
@@ -74,10 +76,10 @@ Easily deploy the Sky allocation system and Spark ALM controller to any EVM-comp
 
 - Run all tests:
     ```sh
-    make test-all
+    forge test
     ```
 
 - Run a specific test by name:
     ```sh
-    make test-match match="YourTestName"
+    forge test --match-test ${YourTestName} -vvv
     ```
