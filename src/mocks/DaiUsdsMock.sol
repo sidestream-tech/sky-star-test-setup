@@ -10,10 +10,10 @@ import {VatMock} from "./VatMock.sol";
  * @dev This contract is not intended for production use and should only be used for testing purpose.
  */
 contract DaiUsdsMock {
-    DaiJoinMock   public immutable daiJoin;
-    UsdsJoinMock  public immutable usdsJoin;
-    GemMock       public immutable dai;
-    GemMock       public immutable usds;
+    DaiJoinMock public immutable daiJoin;
+    UsdsJoinMock public immutable usdsJoin;
+    GemMock public immutable dai;
+    GemMock public immutable usds;
 
     constructor(address daiJoin_, address usdsJoin_) {
         daiJoin = DaiJoinMock(daiJoin_);
@@ -36,5 +36,5 @@ contract DaiUsdsMock {
         usds.transferFrom(msg.sender, address(this), wad);
         usdsJoin.join(address(this), wad);
         daiJoin.exit(usr, wad);
-    } 
+    }
 }

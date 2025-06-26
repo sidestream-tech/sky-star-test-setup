@@ -19,7 +19,7 @@ interface MainnetControllerLike {
     function redeemERC4626(address token, uint256 shares) external returns (uint256 assets);
 }
 
-contract SetUpAllTest is Test {    
+contract SetUpAllTest is Test {
     using stdJson for string;
 
     address relayer;
@@ -40,14 +40,13 @@ contract SetUpAllTest is Test {
         relayer = config.readAddress(".relayer");
 
         vm.startPrank(deployer);
-        
+
         // 1. Deploy mock contracts
         mocks = SetUpAllLib.deployMockContracts();
 
         // 2. Deploy AllocatorSystem
         sharedInstance = AllocatorDeploy.deployShared(deployer, admin);
-        ilkInstance =
-            AllocatorDeploy.deployIlk(deployer, admin, sharedInstance.roles, ilk, address(mocks.usdsJoin));
+        ilkInstance = AllocatorDeploy.deployIlk(deployer, admin, sharedInstance.roles, ilk, address(mocks.usdsJoin));
 
         // 3. Set up AllocatorSystem and Deploy and set up ALM controller
         address[] memory relayers = new address[](1);

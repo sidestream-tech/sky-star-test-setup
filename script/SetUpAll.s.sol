@@ -23,7 +23,7 @@ contract SetUpAll is Script {
     function run() public {
         VmSafe.Wallet memory deployer = vm.createWallet(vm.envUint("PRIVATE_KEY"));
         address admin = deployer.addr;
-        
+
         string memory config = ScriptTools.loadConfig("input");
         bytes32 ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
 
