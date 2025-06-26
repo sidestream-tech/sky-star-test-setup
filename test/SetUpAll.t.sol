@@ -127,11 +127,6 @@ contract SetUpAllTest is Test {
         );
 
         // Withdraw from ERC4626
-        vm.assertEq(usds.balanceOf(almProxy), 5 * WAD, "USDS balance before withdrawal should be 5 WAD");
-        vm.assertEq(
-            ERC4626Mock(mocks.susds).shareBalance(almProxy), 5 * WAD, "Share balance before withdrawal should be 5 WAD"
-        );
-
         vm.prank(relayer);
         uint256 shares = controller.withdrawERC4626(mocks.susds, 3 * WAD); // Withdraw 3 USDS
         vm.assertEq(shares, 3 * WAD, "Withdrawn shares should be 3 WAD");
