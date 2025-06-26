@@ -15,32 +15,27 @@ Easily deploy the Sky allocation system and Spark ALM controller to any EVM-comp
 
 ## Quick Start
 
-### 1. Prepare Environment
+To deploy and configure contracts to the Avalanche Fuji public testnet:
 
-- Copy the example environment file:
-    ```sh
-    cp .env.dev .env
-    ```
-- Edit `.env` and update the variables as described below.
+1. Set environment variables
+    - Copy the example environment via `cp .env.dev .env`
+    - Edit `.env` to update the variables as described in the "Environment Variables" section below
+    
+2. Set the desired ALM `relayer` address inside `script/input/{CHAIN_ID}/input.json`
 
-
-### 2. Simulate Transaction
-
-- Run a dry run:
+3. Dry-run a transaction to determine the amount of required gas
     ```sh
     forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv
     ```
 
-### 3. Execute transaction on Network
+4. Get enough gas tokens using a faucet
 
-- Broadcast the deployment and setup:
+5. Deploy, configure and verify contracts
     ```sh
-    forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv --broadcast --verify --slow 
+    forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv --broadcast --verify --slow
     ```
 
-### 4. Document Results
-
-- Commit the generated output folder to record deployed contract addresses.
+6. (optional) Commit generated output folder to record deployed contract addresses 
 
 
 ## Environment Variables
