@@ -10,7 +10,6 @@ import {SetUpAllLib, MockContracts, ControllerInstance} from "src/libraries/SetU
 import {IGemMock} from "src/mocks/interfaces/IGemMock.sol";
 import {IVatMock} from "src/mocks/interfaces/IVatMock.sol";
 import {ERC4626Mock} from "src/mocks/ERC4626Mock.sol";
-import {console} from "forge-std/console.sol";
 
 interface MainnetControllerLike {
     function mintUSDS(uint256 usdsAmount) external;
@@ -83,27 +82,17 @@ contract SetUpAllTest is Test {
         vm.stopPrank();
     }
 
-    function testMintUsds() public {
-        IGemMock usds = IGemMock(mocks.usds);
-        address almProxy = controllerInstance.almProxy;
-
-        // Mint USDS
-        vm.assertEq(usds.balanceOf(almProxy), 0, "Initial USDS balance should be zero");
-        vm.prank(deployer);
-        MainnetControllerLike(controllerInstance.controller).mintUSDS(10 * WAD); // Mint 10 USDS
-        vm.assertEq(usds.balanceOf(almProxy), 10 * WAD, "USDS balance after minting should be 10 WAD");
-    }
-
-    function testBurnUsds() public {
+    function testMintAndBurnUsds() public {
         IGemMock usds = IGemMock(mocks.usds);
         IVatMock vat = IVatMock(mocks.vat);
+
         address almProxy = controllerInstance.almProxy;
         MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
 
         // Mint USDS
         vm.assertEq(usds.balanceOf(almProxy), 0, "Initial USDS balance should be zero");
         vm.prank(deployer);
-        controller.mintUSDS(10 * WAD); // Mint 10 USDS
+        MainnetControllerLike(controllerInstance.controller).mintUSDS(10 * WAD); // Mint 10 USDS
         vm.assertEq(usds.balanceOf(almProxy), 10 * WAD, "USDS balance after minting should be 10 WAD");
         (uint256 art,,,,) = vat.ilks(ilk);
         vm.assertEq(art, 10 * WAD, "art should be 10 WAD after minting");
@@ -116,7 +105,7 @@ contract SetUpAllTest is Test {
         vm.assertEq(art, 5 * WAD, "art should be 5 WAD after burning");
     }
 
-    function testDepositERC4626() public {
+    function testDepositAndWithdrawAndRedeemERC4626() public {
         IGemMock usds = IGemMock(mocks.usds);
         address almProxy = controllerInstance.almProxy;
         MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
@@ -134,21 +123,6 @@ contract SetUpAllTest is Test {
         vm.assertEq(
             ERC4626Mock(mocks.susds).shareBalance(almProxy), 5 * WAD, "Share balance after deposit should be 5 WAD"
         );
-    }
-
-    function testWithdrawERC4626() public {
-        IGemMock usds = IGemMock(mocks.usds);
-        address almProxy = controllerInstance.almProxy;
-        MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
-
-        // Mint USDS
-        vm.prank(deployer);
-        controller.mintUSDS(10 * WAD); // Mint 10 USDS
-
-        // Deposit into ERC4626
-        vm.assertEq(ERC4626Mock(mocks.susds).shareBalance(almProxy), 0, "Share balance before deposit should be 0");
-        vm.prank(deployer);
-        controller.depositERC4626(mocks.susds, 5 * WAD); // Deposit 5 USDS
 
         // Withdraw from ERC4626
         vm.assertEq(usds.balanceOf(almProxy), 5 * WAD, "USDS balance before withdrawal should be 5 WAD");
@@ -163,34 +137,14 @@ contract SetUpAllTest is Test {
             ERC4626Mock(mocks.susds).shareBalance(almProxy), 2 * WAD, "Share balance after withdrawal should be 2 WAD"
         );
         vm.assertEq(usds.balanceOf(almProxy), 8 * WAD, "USDS balance after withdrawal should be 8 WAD");
-    }
 
-    function testRedeemERC4626() public {
-        IGemMock usds = IGemMock(mocks.usds);
-        address almProxy = controllerInstance.almProxy;
-        MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
-
-        // Mint USDS
+        // Redeem from ERC4626
         vm.prank(deployer);
-        controller.mintUSDS(10 * WAD); // Mint 10 USDS
-
-        // Deposit into ERC4626
-        vm.assertEq(ERC4626Mock(mocks.susds).shareBalance(almProxy), 0, "Share balance before deposit should be 0");
-        vm.prank(deployer);
-        controller.depositERC4626(mocks.susds, 5 * WAD); // Deposit 5 USDS
-
-        // Withdraw from ERC4626
-        vm.assertEq(usds.balanceOf(almProxy), 5 * WAD, "USDS balance before redemption should be 5 WAD");
+        shares = controller.redeemERC4626(mocks.susds, 2 * WAD); // Redeem 2 USDS
+        vm.assertEq(shares, 2 * WAD, "Redeemed shares should be 2 WAD");
         vm.assertEq(
-            ERC4626Mock(mocks.susds).shareBalance(almProxy), 5 * WAD, "Share balance before redemption should be 5 WAD"
+            ERC4626Mock(mocks.susds).shareBalance(almProxy), 0, "Share balance after redemption should be 0 WAD"
         );
-
-        vm.prank(deployer);
-        uint256 shares = controller.redeemERC4626(mocks.susds, 3 * WAD); // Redeem 3 USDS
-        vm.assertEq(shares, 3 * WAD, "Redeemed shares should be 3 WAD");
-        vm.assertEq(
-            ERC4626Mock(mocks.susds).shareBalance(almProxy), 2 * WAD, "Share balance after redemption should be 2 WAD"
-        );
-        vm.assertEq(usds.balanceOf(almProxy), 8 * WAD, "USDS balance after redemption should be 8 WAD");
+        vm.assertEq(usds.balanceOf(almProxy), 10 * WAD, "USDS balance after redemption should be 10 WAD");
     }
 }
