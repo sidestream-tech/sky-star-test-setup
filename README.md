@@ -50,21 +50,24 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
 
 ## Deploying to Other Chains
 
-1. Update `FOUNDRY_ROOT_CHAINID` in `.env`.
-2. Add the new RPC URL in `.env`.
-3. Create `script/input/{CHAIN_ID}/input.json` file
-4. Add the new verification endpoint in [`foundry.toml`](./foundry.toml), e.g:
+1. Update `FOUNDRY_ROOT_CHAINID` in `.env` to use [chain id of the network](https://chainlist.org/) you're trying to deploy to. For example, to deploy to Sepolia that would be `11155111`
+2. Add new `*_RPC_URL` to the `.env` pointing to the PRC endpoint for the chain specified above, e.g:
+    ```toml
+    SEPOLIA_RPC_URL = "https://..."
+    ```
+3. Create `script/input/{CHAIN_ID}/input.json` file with relevant content
+4. Add the new verification endpoint to the [`foundry.toml`](./foundry.toml), e.g:
      ```toml
-     mainnet = { key = "${ETHERSCAN_API_KEY}", chain = 1 }
+     sepolia = { key = "${ETHERSCAN_API_KEY}", chain = 11155111 }
      ```
 5. Add the new `rpc_endpoints` in [`foundry.toml`](./foundry.toml), e.g.:
      ```toml
-     mainnet = "${MAINNET_RPC_URL}"
+     sepolia = "${SEPOLIA_RPC_URL}"
      ```
-6. Specify the chain when running the script, e.g.:
+6. Follow the "Quick start" section, while specifying the chain name under `--fork-url` (e.g. `sepolia`) when running the script, e.g.:
      ```sh
-     forge script script/SetUpAll.s.sol:SetUpAll --fork-url ${CHAIN} -vv --broadcast --verify --slow 
-     ```
+     forge script script/SetUpAll.s.sol:SetUpAll --fork-url ${CHAIN} -vv
+     `````
 
 
 ### Running Tests
