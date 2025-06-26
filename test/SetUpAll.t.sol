@@ -32,6 +32,9 @@ contract SetUpAllTest is Test {
     uint256 constant WAD = 10 ** 18;
 
     function setUp() public {
+        // 0. Set FOUNDRY_ROOT_CHAINID to Avalanche Fuji testnet
+        vm.setEnv("FOUNDRY_ROOT_CHAINID", "43113");
+
         (address deployer,) = makeAddrAndKey("deployer");
         address admin = deployer;
 
