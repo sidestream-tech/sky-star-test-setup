@@ -20,6 +20,7 @@ interface MainnetControllerLike {
     function redeemERC4626(address token, uint256 shares) external returns (uint256 assets);
     function swapUSDSToUSDC(uint256 usdcAmount) external;
     function swapUSDCToUSDS(uint256 usdcAmount) external;
+    function transferUSDCToCCTP(uint256 usdcAmount, uint32 destinationDomain) external;
 }
 
 contract SetUpAllTest is Test {
@@ -33,6 +34,7 @@ contract SetUpAllTest is Test {
     AllocatorIlkInstance ilkInstance;
     ControllerInstance controllerInstance;
     bytes32 ilk;
+    uint32 cctpDestinationDomain;
 
     uint256 constant WAD = 10 ** 18;
 
@@ -49,8 +51,10 @@ contract SetUpAllTest is Test {
 
         string memory config = ScriptTools.loadConfig("input");
         ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
-        relayer = config.readAddress(".relayer");
         usdc = config.readAddress(".usdc");
+
+        relayer = config.readAddress(".relayer");
+        cctpDestinationDomain = uint32(config.readUint(".cctpDestinationDomain"));
 
         // Fill up usdc to pocket
         GodMode.setBalance(usdc, pocket, 1000 * 10 ** 6);
@@ -80,11 +84,13 @@ contract SetUpAllTest is Test {
         controllerInstance = SetUpAllLib.setUpAllocatorAndALMController(params);
 
         // 4. Set up rate limits for the controller
-        SetUpAllLib.setMainnetControllerRateLimits({
+        SetUpAllLib.setMainnetControllerRateLimits(SetUpAllLib.RateLimitParams({
             controllerInstance: controllerInstance,
             usdcUnitSize: config.readUint(".usdcUnitSize"),
-            susds: address(mocks.susds)
-        });
+            susds: address(mocks.susds),
+            cctpDestinationDomain: cctpDestinationDomain,
+            cctpRecipient: ScriptTools.stringToBytes32(config.readString(".cctpRecipient")) 
+        }));
 
         vm.stopPrank();
     }
@@ -150,7 +156,7 @@ contract SetUpAllTest is Test {
         vm.assertEq(usds.balanceOf(almProxy), 10 * WAD, "USDS balance after redemption should be 10 WAD");
     }
 
-    function testSwapUSDSToUSDCAndBack() public {
+    function testSwapUsdsToUsdcAndBack() public {
         IGemMock usds = IGemMock(mocks.usds);
         address almProxy = controllerInstance.almProxy;
         MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
@@ -170,5 +176,25 @@ contract SetUpAllTest is Test {
         controller.swapUSDCToUSDS(5 * 10 ** 6); // Swap to 5 USDC back to USDS
         vm.assertEq(usds.balanceOf(almProxy), 10 * WAD, "USDS balance after swap back should be 10 WAD");
         vm.assertEq(IGemMock(usdc).balanceOf(almProxy), 0, "USDC balance after swap back should be 0 USDC");
+    }
+
+    function testTransferUSDCToCCTP() public {
+        IGemMock usdcMock = IGemMock(usdc);
+        address almProxy = controllerInstance.almProxy;
+        MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
+
+        // Mint USDS
+        vm.prank(relayer);
+        controller.mintUSDS(10 * WAD); // Mint 10 USDS
+
+        // Swap USDS to USDC
+        vm.prank(relayer);
+        controller.swapUSDSToUSDC(10 * 10 ** 6); // Swap to 10 USDC
+
+        // Transfer USDC to CCTP
+        vm.prank(relayer);
+        controller.transferUSDCToCCTP(5 * 10 ** 6, cctpDestinationDomain); // Transfer 5 USDC
+
+        vm.assertEq(usdcMock.balanceOf(almProxy), 5 * 10 ** 6, "USDC balance after transfer should be 5 USDC");
     }
 }

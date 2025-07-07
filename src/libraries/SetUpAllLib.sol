@@ -28,6 +28,10 @@ interface MainnetControllerLike {
     function LIMIT_4626_DEPOSIT() external returns (bytes32);
     function LIMIT_4626_WITHDRAW() external returns (bytes32);
     function LIMIT_USDS_TO_USDC() external returns (bytes32);
+    function LIMIT_USDC_TO_DOMAIN() external returns (bytes32);
+    function LIMIT_USDC_TO_CCTP() external returns (bytes32);
+
+    function setMintRecipient(uint32 destinationDomain, bytes32 mintRecipient) external;
 }
 
 interface RegistryLike {
@@ -59,6 +63,14 @@ library SetUpAllLib {
         MockContracts mocks;
         address cctp;
         address[] relayers;
+    }
+
+    struct RateLimitParams {
+        ControllerInstance controllerInstance;
+        uint256 usdcUnitSize;
+        address susds;
+        uint32 cctpDestinationDomain;
+        bytes32 cctpRecipient;
     }
 
     function deployMockContracts(address usdc, address pocket) internal returns (MockContracts memory mocks) {
@@ -176,14 +188,10 @@ library SetUpAllLib {
     }
 
     // Rate limits value copied from https://github.com/sparkdotfi/spark-alm-controller/blob/7f0a473951e4c5528d52ee442461662976c4a947/script/staging/FullStagingDeploy.s.sol#L381
-    function setMainnetControllerRateLimits(
-        ControllerInstance memory controllerInstance,
-        uint256 usdcUnitSize,
-        address susds
-    ) internal {
-        IRateLimits rateLimits = IRateLimits(controllerInstance.rateLimits);
-        MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
-        uint256 USDC_UNIT_SIZE = usdcUnitSize * 1e6;
+    function setMainnetControllerRateLimits(RateLimitParams memory params) internal {
+        IRateLimits rateLimits = IRateLimits(params.controllerInstance.rateLimits);
+        MainnetControllerLike controller = MainnetControllerLike(params.controllerInstance.controller);
+        uint256 USDC_UNIT_SIZE = params.usdcUnitSize * 1e6;
         uint256 maxAmount18 = USDC_UNIT_SIZE * 1e12 * 5;
         uint256 slope18 = USDC_UNIT_SIZE * 1e12 / 4 hours;
         uint256 maxAmount6 = USDC_UNIT_SIZE * 5;
@@ -196,10 +204,16 @@ library SetUpAllLib {
         bytes32 depositKey = controller.LIMIT_4626_DEPOSIT();
         bytes32 withdrawKey = controller.LIMIT_4626_WITHDRAW();
 
-        rateLimits.setRateLimitData(RateLimitHelpers.makeAssetKey(depositKey, susds), maxAmount18, slope18);
-        rateLimits.setRateLimitData(RateLimitHelpers.makeAssetKey(withdrawKey, susds), type(uint256).max, 0);
+        rateLimits.setRateLimitData(RateLimitHelpers.makeAssetKey(depositKey, params.susds), maxAmount18, slope18);
+        rateLimits.setRateLimitData(RateLimitHelpers.makeAssetKey(withdrawKey, params.susds), type(uint256).max, 0);
 
         // USDS to USDC conversion rate limits
         rateLimits.setRateLimitData(controller.LIMIT_USDS_TO_USDC(), maxAmount6, slope6);
+
+        // transferUSDCToCCTP rate limits
+        controller.setMintRecipient(params.cctpDestinationDomain, params.cctpRecipient);
+        bytes32 domainKey = RateLimitHelpers.makeDomainKey(controller.LIMIT_USDC_TO_DOMAIN(), params.cctpDestinationDomain);
+        rateLimits.setRateLimitData(domainKey, maxAmount6, slope6);
+        rateLimits.setUnlimitedRateLimitData(controller.LIMIT_USDC_TO_CCTP());
     }
 }
