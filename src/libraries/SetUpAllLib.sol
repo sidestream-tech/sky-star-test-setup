@@ -212,7 +212,8 @@ library SetUpAllLib {
 
         // transferUSDCToCCTP rate limits
         controller.setMintRecipient(params.cctpDestinationDomain, params.cctpRecipient);
-        bytes32 domainKey = RateLimitHelpers.makeDomainKey(controller.LIMIT_USDC_TO_DOMAIN(), params.cctpDestinationDomain);
+        bytes32 domainKey =
+            RateLimitHelpers.makeDomainKey(controller.LIMIT_USDC_TO_DOMAIN(), params.cctpDestinationDomain);
         rateLimits.setRateLimitData(domainKey, maxAmount6, slope6);
         rateLimits.setUnlimitedRateLimitData(controller.LIMIT_USDC_TO_CCTP());
     }

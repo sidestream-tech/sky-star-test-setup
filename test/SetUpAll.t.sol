@@ -84,13 +84,15 @@ contract SetUpAllTest is Test {
         controllerInstance = SetUpAllLib.setUpAllocatorAndALMController(params);
 
         // 4. Set up rate limits for the controller
-        SetUpAllLib.setMainnetControllerRateLimits(SetUpAllLib.RateLimitParams({
-            controllerInstance: controllerInstance,
-            usdcUnitSize: config.readUint(".usdcUnitSize"),
-            susds: address(mocks.susds),
-            cctpDestinationDomain: cctpDestinationDomain,
-            cctpRecipient: ScriptTools.stringToBytes32(config.readString(".cctpRecipient")) 
-        }));
+        SetUpAllLib.setMainnetControllerRateLimits(
+            SetUpAllLib.RateLimitParams({
+                controllerInstance: controllerInstance,
+                usdcUnitSize: config.readUint(".usdcUnitSize"),
+                susds: address(mocks.susds),
+                cctpDestinationDomain: cctpDestinationDomain,
+                cctpRecipient: ScriptTools.stringToBytes32(config.readString(".cctpRecipient"))
+            })
+        );
 
         vm.stopPrank();
     }
