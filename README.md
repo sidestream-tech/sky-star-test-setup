@@ -6,7 +6,7 @@ Easily deploy the Sky allocation system and Spark ALM controller to any EVM-comp
 
 - [`dss-allocator`](https://github.com/sky-ecosystem/dss-allocator)
 - [`spark-alm-controller`](https://github.com/sparkdotfi/spark-alm-controller)
-- Mock contracts: `vat`, `usdsJoin`, `usds`, `sUsds`, `jug`, `usdsDai`, `dai`, `psmLite`
+- Mock contracts: `vat`, `usdsJoin`, `usds`, `sUsds`, `jug`, `usdsDai`, `dai`, `daiJoin`, `psmLite`
 
 ## Prerequisites
 
@@ -55,7 +55,9 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
     ```toml
     SEPOLIA_RPC_URL = "https://..."
     ```
-3. Create `script/input/{CHAIN_ID}/input.json` file with relevant content
+3. Create `script/input/{CHAIN_ID}/input.json` file with relevant content OR if json file already exist, update following fields to the correct value
+    - `cctpRecipient`
+    - `relayer`
 4. Add the new verification endpoint to the [`foundry.toml`](./foundry.toml), e.g:
      ```toml
      sepolia = { key = "${ETHERSCAN_API_KEY}", chain = 11155111 }
@@ -81,3 +83,7 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
     ```sh
     forge test --match-test ${YourTestName} -vvv
     ```
+
+### Preparation for testing
+- PSM uses `deployer` as pocket, which means when `usds` is swapped to `usdc`, the usdc is pulled from `deployer` wallet. So `deployer` wallet should hold valid usdc amount.
+  - USDC faucet: https://faucet.circle.com/
