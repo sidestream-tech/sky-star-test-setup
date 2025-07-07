@@ -2,5 +2,6 @@
   "relayer": "0x5B4724De84203cB05F126a29D92065Ad08f7F34B",
   "cctpTokenMessenger": "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",
   "ilk": "ALLOCATOR_STAR_A",
-  "usdcUnitSize": 10
+  "usdcUnitSize": 10,
+  "usdc": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
 }

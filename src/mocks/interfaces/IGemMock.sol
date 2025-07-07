@@ -2,6 +2,8 @@
 pragma solidity ^0.8.21;
 
 interface IGemMock {
+    function decimals() external view returns (uint8);
+
     function rely(address usr) external;
     function deny(address usr) external;
 

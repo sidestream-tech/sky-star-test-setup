@@ -10,21 +10,28 @@ import {VatMock} from "src/mocks/VatMock.sol";
  */
 contract JugMock {
     // --- Auth ---
-    mapping (address => uint) public wards;
-    function rely(address usr) external auth { wards[usr] = 1; }
-    function deny(address usr) external auth { wards[usr] = 0; }
-    modifier auth {
+    mapping(address => uint256) public wards;
+
+    function rely(address usr) external auth {
+        wards[usr] = 1;
+    }
+
+    function deny(address usr) external auth {
+        wards[usr] = 0;
+    }
+
+    modifier auth() {
         require(wards[msg.sender] == 1, "Jug/not-authorized");
         _;
     }
 
     struct Ilk {
-        uint256 duty;  
-        uint256  rho; 
+        uint256 duty;
+        uint256 rho;
     }
 
     VatMock vat;
-    mapping (bytes32 => Ilk) public ilks;
+    mapping(bytes32 => Ilk) public ilks;
 
     constructor(VatMock vat_) {
         wards[msg.sender] = 1;
@@ -37,10 +44,10 @@ contract JugMock {
         Ilk storage i = ilks[ilk];
         require(i.duty == 0, "Jug/ilk-already-init");
         i.duty = ONE;
-        i.rho  = block.timestamp;
+        i.rho = block.timestamp;
     }
-    
-    function file(bytes32 ilk, bytes32 what, uint data) external auth {
+
+    function file(bytes32 ilk, bytes32 what, uint256 data) external auth {
         require(block.timestamp == ilks[ilk].rho, "Jug/rho-not-updated");
         if (what == "duty") ilks[ilk].duty = data;
         else revert("Jug/file-unrecognized-param");
@@ -48,9 +55,9 @@ contract JugMock {
 
     function drip(bytes32 ilk) external returns (uint256 rate) {
         uint256 add = (ilks[ilk].duty - 10 ** 27) * (block.timestamp - ilks[ilk].rho);
-        (,uint256 prev,,,) = vat.ilks(ilk);
+        (, uint256 prev,,,) = vat.ilks(ilk);
         rate = prev + add;
-        vat.fold(ilk, int(rate) - int(prev));
+        vat.fold(ilk, int256(rate) - int256(prev));
         ilks[ilk].rho = block.timestamp;
     }
 }

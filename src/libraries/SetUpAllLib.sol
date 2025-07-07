@@ -15,17 +15,19 @@ import {GemMock} from "src/mocks/GemMock.sol";
 import {UsdsJoinMock} from "src/mocks/UsdsJoinMock.sol";
 import {DaiJoinMock} from "src/mocks/DaiJoinMock.sol";
 import {DaiUsdsMock} from "src/mocks/DaiUsdsMock.sol";
-import {PSMMock} from "src/mocks/PSMMock.sol";
+import {LitePsmMock} from "src/mocks/LitePsmMock.sol";
 import {JugMock} from "src/mocks/JugMock.sol";
 import {IVatMock} from "src/mocks/interfaces/IVatMock.sol";
 import {IJugMock} from "src/mocks/interfaces/IJugMock.sol";
 import {IGemMock} from "src/mocks/interfaces/IGemMock.sol";
 import {ERC4626Mock} from "src/mocks/ERC4626Mock.sol";
+import {PSMMock} from "src/mocks/PSMMock.sol";
 
 interface MainnetControllerLike {
     function LIMIT_USDS_MINT() external returns (bytes32);
     function LIMIT_4626_DEPOSIT() external returns (bytes32);
     function LIMIT_4626_WITHDRAW() external returns (bytes32);
+    function LIMIT_USDS_TO_USDC() external returns (bytes32);
 }
 
 interface RegistryLike {
@@ -59,31 +61,42 @@ library SetUpAllLib {
         address[] relayers;
     }
 
-    function deployMockContracts() internal returns (MockContracts memory mocks) {
+    function deployMockContracts(address usdc, address pocket) internal returns (MockContracts memory mocks) {
+        bytes32 psmIlk = "MCD_LITE_PSM_USDC";
+
         // 1. Deploy mock contracts
-        mocks.vat = address(new VatMock());
+        VatMock vat = new VatMock();
+        mocks.vat = address(vat);
         mocks.usds = address(new GemMock());
         mocks.usdsJoin = address(new UsdsJoinMock(VatMock(mocks.vat), GemMock(mocks.usds)));
         mocks.dai = address(new GemMock());
         mocks.daiJoin = address(new DaiJoinMock(VatMock(mocks.vat), GemMock(mocks.dai)));
         mocks.daiUsds = address(new DaiUsdsMock(mocks.daiJoin, mocks.usdsJoin));
-        mocks.psm = address(new PSMMock(mocks.usds));
-        mocks.jug = address(new JugMock(VatMock(mocks.vat)));
+        JugMock jug = new JugMock(VatMock(mocks.vat));
+        mocks.jug = address(jug);
         mocks.susds = address(new ERC4626Mock(GemMock(mocks.usds)));
+        mocks.psm = address(new LitePsmMock(psmIlk, usdc, mocks.daiJoin, pocket));
 
         // 2. Rely Usds on UsdsJoin
         IGemMock(mocks.usds).rely(mocks.usdsJoin);
-        // 3. Rely Dai on DaiJoin
+        // 4. Rely Dai on DaiJoin
         IGemMock(mocks.dai).rely(mocks.daiJoin);
-        // 4. Rely Vat on Jug
-        IVatMock(mocks.vat).rely(mocks.jug);
+        // 5. Rely Vat on Jug
+        vat.rely(mocks.jug);
+        // 6. Set PSM
+        vat.init(psmIlk);
+        jug.init(psmIlk);
+        vat.file(psmIlk, "line", 10_000_000 * RAD); // 1 million line
+        // 7. Approve psm to transfer usdc from pocket (msg.sender)
+        IGemMock(usdc).approve(mocks.psm, type(uint256).max);
 
         return mocks;
     }
 
-    function setUpAllocatorAndALMController(
-        AllocatorSetupParams memory params
-    ) internal returns (ControllerInstance memory controllerInstance) {
+    function setUpAllocatorAndALMController(AllocatorSetupParams memory params)
+        internal
+        returns (ControllerInstance memory controllerInstance)
+    {
         IVatMock vat = IVatMock(params.mocks.vat);
         IJugMock jug = IJugMock(params.mocks.jug);
 
@@ -92,7 +105,7 @@ library SetUpAllLib {
         jug.init(params.ilk);
 
         // 1.1 Set ilk parameters
-        vat.file(params.ilk, "line", 10_000_000  * RAD); // 1 million line
+        vat.file(params.ilk, "line", 10_000_000 * RAD); // 1 million line
         jug.file(params.ilk, "duty", 1000000000000000000000000000); // 0% duty
 
         // 2. Add buffer to registry
@@ -173,6 +186,8 @@ library SetUpAllLib {
         uint256 USDC_UNIT_SIZE = usdcUnitSize * 1e6;
         uint256 maxAmount18 = USDC_UNIT_SIZE * 1e12 * 5;
         uint256 slope18 = USDC_UNIT_SIZE * 1e12 / 4 hours;
+        uint256 maxAmount6 = USDC_UNIT_SIZE * 5;
+        uint256 slope6 = USDC_UNIT_SIZE / 4 hours;
 
         // USDS mint/burn rate limits
         rateLimits.setRateLimitData(controller.LIMIT_USDS_MINT(), maxAmount18, slope18);
@@ -183,5 +198,8 @@ library SetUpAllLib {
 
         rateLimits.setRateLimitData(RateLimitHelpers.makeAssetKey(depositKey, susds), maxAmount18, slope18);
         rateLimits.setRateLimitData(RateLimitHelpers.makeAssetKey(withdrawKey, susds), type(uint256).max, 0);
+
+        // USDS to USDC conversion rate limits
+        rateLimits.setRateLimitData(controller.LIMIT_USDS_TO_USDC(), maxAmount6, slope6);
     }
 }

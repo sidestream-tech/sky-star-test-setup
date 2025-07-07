@@ -19,5 +19,5 @@ interface IVatMock {
     function move(address src, address dst, uint256 rad) external;
     function frob(bytes32 i, address u, address v, address w, int256 dink, int256 dart) external;
     function grab(bytes32 i, address u, address v, address w, int256 dink, int256 dart) external;
-    function fold(bytes32 i, int rate) external;
+    function fold(bytes32 i, int256 rate) external;
 }

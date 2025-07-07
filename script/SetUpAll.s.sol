@@ -25,11 +25,12 @@ contract SetUpAll is Script {
 
         string memory config = ScriptTools.loadConfig("input");
         bytes32 ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
+        address usdc = config.readAddress(".usdc");
 
         vm.startBroadcast(deployer.privateKey);
 
         // 1. Deploy mock contracts
-        MockContracts memory mocks = SetUpAllLib.deployMockContracts();
+        MockContracts memory mocks = SetUpAllLib.deployMockContracts(usdc, admin);
 
         // 2. Deploy AllocatorSystem
         AllocatorSharedInstance memory sharedInstance = AllocatorDeploy.deployShared(deployer.addr, admin);

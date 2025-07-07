@@ -9,6 +9,8 @@ import {SetUpAllLib, MockContracts, ControllerInstance} from "src/libraries/SetU
 import {IGemMock} from "src/mocks/interfaces/IGemMock.sol";
 import {IVatMock} from "src/mocks/interfaces/IVatMock.sol";
 import {ERC4626Mock} from "src/mocks/ERC4626Mock.sol";
+import {GodMode} from "dss-test/DssTest.sol";
+import {console} from "forge-std/console.sol";
 
 interface MainnetControllerLike {
     function mintUSDS(uint256 usdsAmount) external;
@@ -16,12 +18,16 @@ interface MainnetControllerLike {
     function depositERC4626(address token, uint256 amount) external returns (uint256 shares);
     function withdrawERC4626(address token, uint256 amount) external returns (uint256 shares);
     function redeemERC4626(address token, uint256 shares) external returns (uint256 assets);
+    function swapUSDSToUSDC(uint256 usdcAmount) external;
+    function swapUSDCToUSDS(uint256 usdcAmount) external;
 }
 
 contract SetUpAllTest is Test {
     using stdJson for string;
 
     address relayer;
+    address usdc;
+    address pocket;
     MockContracts mocks;
     AllocatorSharedInstance sharedInstance;
     AllocatorIlkInstance ilkInstance;
@@ -31,20 +37,28 @@ contract SetUpAllTest is Test {
     uint256 constant WAD = 10 ** 18;
 
     function setUp() public {
-        // 0. Set FOUNDRY_ROOT_CHAINID to Avalanche Fuji testnet
+        // 0. Set up Avalanche Fuji testnet
+        // 0-a. Set up the environment for the Fuji testnet
         vm.setEnv("FOUNDRY_ROOT_CHAINID", "43113");
+        // 0-b. Create a fork of the Fuji testnet
+        uint256 fujiFork = vm.createFork("https://api.avax-test.network/ext/bc/C/rpc");
+        vm.selectFork(fujiFork);
 
         (address deployer,) = makeAddrAndKey("deployer");
-        address admin = deployer;
+        address admin = pocket = deployer;
 
         string memory config = ScriptTools.loadConfig("input");
         ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
         relayer = config.readAddress(".relayer");
+        usdc = config.readAddress(".usdc");
+
+        // Fill up usdc to pocket
+        GodMode.setBalance(usdc, pocket, 1000 * 10 ** 6);
 
         vm.startPrank(deployer);
 
         // 1. Deploy mock contracts
-        mocks = SetUpAllLib.deployMockContracts();
+        mocks = SetUpAllLib.deployMockContracts(usdc, admin);
 
         // 2. Deploy AllocatorSystem
         sharedInstance = AllocatorDeploy.deployShared(deployer, admin);
@@ -134,5 +148,27 @@ contract SetUpAllTest is Test {
             ERC4626Mock(mocks.susds).shareBalance(almProxy), 0, "Share balance after redemption should be 0 WAD"
         );
         vm.assertEq(usds.balanceOf(almProxy), 10 * WAD, "USDS balance after redemption should be 10 WAD");
+    }
+
+    function testSwapUSDSToUSDCAndBack() public {
+        IGemMock usds = IGemMock(mocks.usds);
+        address almProxy = controllerInstance.almProxy;
+        MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
+
+        // Mint USDS
+        vm.prank(relayer);
+        controller.mintUSDS(10 * WAD); // Mint 10 USDS
+
+        // Swap USDS to USDC
+        vm.prank(relayer);
+        controller.swapUSDSToUSDC(5 * 10 ** 6); // Swap to 5 USDC
+        vm.assertEq(usds.balanceOf(almProxy), 5 * WAD, "USDS balance after swap should be 5 WAD");
+        vm.assertEq(IGemMock(usdc).balanceOf(almProxy), 5 * 10 ** 6, "USDC balance after swap should be 5 USDC");
+
+        // Swap USDC back to USDS
+        vm.prank(relayer);
+        controller.swapUSDCToUSDS(5 * 10 ** 6); // Swap to 5 USDC back to USDS
+        vm.assertEq(usds.balanceOf(almProxy), 10 * WAD, "USDS balance after swap back should be 10 WAD");
+        vm.assertEq(IGemMock(usdc).balanceOf(almProxy), 0, "USDC balance after swap back should be 0 USDC");
     }
 }
