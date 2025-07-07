@@ -54,7 +54,7 @@ contract SetUpAllTest is Test {
         address[] memory relayers = new address[](1);
         relayers[0] = relayer;
 
-        controllerInstance = SetUpAllLib.setUpAllocatorAndALMController({
+        SetUpAllLib.AllocatorSetupParams memory params = SetUpAllLib.AllocatorSetupParams({
             ilk: ilk,
             ilkInstance: ilkInstance,
             sharedInstance: sharedInstance,
@@ -63,6 +63,7 @@ contract SetUpAllTest is Test {
             cctp: config.readAddress(".cctpTokenMessenger"),
             relayers: relayers
         });
+        controllerInstance = SetUpAllLib.setUpAllocatorAndALMController(params);
 
         // 4. Set up rate limits for the controller
         SetUpAllLib.setMainnetControllerRateLimits({

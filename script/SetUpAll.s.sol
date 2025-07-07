@@ -40,15 +40,16 @@ contract SetUpAll is Script {
         address[] memory relayers = new address[](1);
         relayers[0] = config.readAddress(".relayer");
 
-        ControllerInstance memory controllerInstance = SetUpAllLib.setUpAllocatorAndALMController({
+        SetUpAllLib.AllocatorSetupParams memory params = SetUpAllLib.AllocatorSetupParams({
             ilk: ilk,
             ilkInstance: ilkInstance,
             sharedInstance: sharedInstance,
-            mocks: mocks,
             admin: admin,
+            mocks: mocks,
             cctp: config.readAddress(".cctpTokenMessenger"),
             relayers: relayers
         });
+        ControllerInstance memory controllerInstance = SetUpAllLib.setUpAllocatorAndALMController(params);
 
         // 4. Set up rate limits for the controller
         SetUpAllLib.setMainnetControllerRateLimits({

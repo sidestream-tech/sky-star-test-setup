@@ -18,6 +18,7 @@ import {DaiUsdsMock} from "src/mocks/DaiUsdsMock.sol";
 import {PSMMock} from "src/mocks/PSMMock.sol";
 import {JugMock} from "src/mocks/JugMock.sol";
 import {IVatMock} from "src/mocks/interfaces/IVatMock.sol";
+import {IJugMock} from "src/mocks/interfaces/IJugMock.sol";
 import {IGemMock} from "src/mocks/interfaces/IGemMock.sol";
 import {ERC4626Mock} from "src/mocks/ERC4626Mock.sol";
 
@@ -46,6 +47,17 @@ struct MockContracts {
 
 library SetUpAllLib {
     uint256 internal constant WAD = 10 ** 18;
+    uint256 internal constant RAD = 10 ** 45;
+
+    struct AllocatorSetupParams {
+        bytes32 ilk;
+        AllocatorIlkInstance ilkInstance;
+        AllocatorSharedInstance sharedInstance;
+        address admin;
+        MockContracts mocks;
+        address cctp;
+        address[] relayers;
+    }
 
     function deployMockContracts() internal returns (MockContracts memory mocks) {
         // 1. Deploy mock contracts
@@ -70,49 +82,52 @@ library SetUpAllLib {
     }
 
     function setUpAllocatorAndALMController(
-        bytes32 ilk,
-        AllocatorIlkInstance memory ilkInstance,
-        AllocatorSharedInstance memory sharedInstance,
-        address admin,
-        MockContracts memory mocks,
-        address cctp,
-        address[] memory relayers
+        AllocatorSetupParams memory params
     ) internal returns (ControllerInstance memory controllerInstance) {
-        IVatMock vat = IVatMock(mocks.vat);
+        IVatMock vat = IVatMock(params.mocks.vat);
+        IJugMock jug = IJugMock(params.mocks.jug);
 
-        // 1. Add buffer to registry
-        RegistryLike(sharedInstance.registry).file(ilk, "buffer", ilkInstance.buffer);
+        // 1. Onboard the ilk
+        vat.init(params.ilk);
+        jug.init(params.ilk);
 
-        // 2. Initiate the allocator vault
-        vat.slip(ilk, ilkInstance.vault, int256(10 ** 12 * WAD));
-        vat.grab(ilk, ilkInstance.vault, ilkInstance.vault, address(0), int256(10 ** 12 * WAD), 0);
+        // 1.1 Set ilk parameters
+        vat.file(params.ilk, "line", 10_000_000  * RAD); // 1 million line
+        jug.file(params.ilk, "duty", 1000000000000000000000000000); // 0% duty
 
-        // 3. Set up Jug on AllocatorVault (to draw/wipe)
-        VaultLike(ilkInstance.vault).file("jug", mocks.jug);
+        // 2. Add buffer to registry
+        RegistryLike(params.sharedInstance.registry).file(params.ilk, "buffer", params.ilkInstance.buffer);
 
-        // 4. Allow vault to pull funds from the buffer
-        BufferLike(ilkInstance.buffer).approve(
-            VaultLike(ilkInstance.vault).usds(), ilkInstance.vault, type(uint256).max
+        // 3. Initiate the allocator vault
+        vat.slip(params.ilk, params.ilkInstance.vault, int256(10 ** 12 * WAD));
+        vat.grab(params.ilk, params.ilkInstance.vault, params.ilkInstance.vault, address(0), int256(10 ** 12 * WAD), 0);
+
+        // 4. Set up Jug on AllocatorVault (to draw/wipe)
+        VaultLike(params.ilkInstance.vault).file("jug", params.mocks.jug);
+
+        // 5. Allow vault to pull funds from the buffer
+        BufferLike(params.ilkInstance.buffer).approve(
+            VaultLike(params.ilkInstance.vault).usds(), params.ilkInstance.vault, type(uint256).max
         );
 
-        // 5. Register
-        RolesLike(sharedInstance.roles).setIlkAdmin(ilk, admin);
+        // 6. Register
+        RolesLike(params.sharedInstance.roles).setIlkAdmin(params.ilk, params.admin);
 
-        // 6. Deploy ALM controller
-        controllerInstance.almProxy = address(new ALMProxy(admin));
-        controllerInstance.rateLimits = address(new RateLimits(admin));
+        // 7. Deploy ALM controller
+        controllerInstance.almProxy = address(new ALMProxy(params.admin));
+        controllerInstance.rateLimits = address(new RateLimits(params.admin));
 
         controllerInstance.controller = address(
             new MainnetController({
-                admin_: admin,
+                admin_: params.admin,
                 proxy_: controllerInstance.almProxy,
                 rateLimits_: controllerInstance.rateLimits,
-                vault_: ilkInstance.vault,
-                psm_: mocks.psm,
-                daiUsds_: mocks.daiUsds,
-                cctp_: cctp,
+                vault_: params.ilkInstance.vault,
+                psm_: params.mocks.psm,
+                daiUsds_: params.mocks.daiUsds,
+                cctp_: params.cctp,
                 addresses: MainnetController.Addresses({
-                    USDS: mocks.usds,
+                    USDS: params.mocks.usds,
                     USDE: address(0),
                     SUSDE: address(0),
                     USTB: address(0),
@@ -122,26 +137,26 @@ library SetUpAllLib {
             })
         );
 
-        // 7. Set up ALM controller
+        // 8. Set up ALM controller
         MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](0);
 
         MainnetControllerInit.initAlmSystem(
-            ilkInstance.vault,
-            mocks.usds,
+            params.ilkInstance.vault,
+            params.mocks.usds,
             controllerInstance,
             MainnetControllerInit.ConfigAddressParams({
                 freezer: address(0),
-                relayers: relayers,
+                relayers: params.relayers,
                 oldController: address(0)
             }),
             MainnetControllerInit.CheckAddressParams({
-                admin: admin,
+                admin: params.admin,
                 proxy: controllerInstance.almProxy,
                 rateLimits: controllerInstance.rateLimits,
-                vault: ilkInstance.vault,
-                psm: mocks.psm,
-                daiUsds: mocks.daiUsds,
-                cctp: cctp
+                vault: params.ilkInstance.vault,
+                psm: params.mocks.psm,
+                daiUsds: params.mocks.daiUsds,
+                cctp: params.cctp
             }),
             mintRecipients
         );
