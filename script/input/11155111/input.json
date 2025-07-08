@@ -2,8 +2,8 @@
   "ilk": "ALLOCATOR_STAR_A",
   "usdcUnitSize": 10,
   "cctpDestinationDomain": "5",
-  "usdc": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
   "cctpTokenMessenger": "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",
-  "relayer": "0x5B4724De84203cB05F126a29D92065Ad08f7F34B",
-  "cctpRecipient": "6gypsJcUpikWPNdaisLCUKdbL4aeGv2Zs1bx3wLnv4iP"
+  "cctpRecipient": "0x98997f46cd297f909c83b8b140d7725d00e61413ad5942760e8cb819acbcd7ce",
+  "usdc": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+  "relayer": "0x9b688229dfdf12dbc98d3096cc66c13fe11c81f4"
 }

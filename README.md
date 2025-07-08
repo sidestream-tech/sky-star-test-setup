@@ -77,9 +77,9 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
 |-------------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | `ilk`                   | Collateral type identifier (e.g., `"ALLOCATOR_STAR_A"`)                                                                           |
 | `usdcUnitSize`          | Amount of USDC (in smallest units, e.g., wei) to use for testing (default: 10)                                                    |
-| `cctpDestinationDomain` | CCTP destination domain ID for cross-chain messaging ([see supported domains](https://developers.circle.com/cctp/evm-smart-contracts#tokenmessenger-testnet))|
+| `cctpDestinationDomain` | CCTP destination domain ID for cross-chain messaging ([see supported domains](https://developers.circle.com/cctp/solana-programs#devnet-program-addresses))|
 | `cctpTokenMessenger`    | Address of the CCTP Token Messenger contract on the target chain ([see EVM contracts](https://developers.circle.com/cctp/evm-smart-contracts#tokenmessenger-testnet))         |
-| `cctpRecipient`         | Address of the CCTP transfer recipient (should correspond to the destination domain)                                               |
+| `cctpRecipient`         | USDC token account of the CCTP transfer recipient in HEX, decode can be done using tools like [this](https://appdevtools.com/base58-encoder-decoder). _It should correspond to the destination domain_ |
 | `usdc`                  | Address of the USDC token contract on the target chain ([see contract addresses](https://developers.circle.com/stablecoins/usdc-contract-addresses)) |
 | `relayer`               | Address of the relayer to be used by the ALM controller                                                                           |
 

@@ -51,7 +51,7 @@ contract SetUpAll is Script {
             relayers: relayers
         });
         ControllerInstance memory controllerInstance = SetUpAllLib.setUpAllocatorAndALMController(params);
-
+        
         // 4. Set up rate limits for the controller
         SetUpAllLib.setMainnetControllerRateLimits(
             SetUpAllLib.RateLimitParams({
@@ -59,7 +59,7 @@ contract SetUpAll is Script {
                 usdcUnitSize: config.readUint(".usdcUnitSize"),
                 susds: address(mocks.susds),
                 cctpDestinationDomain: uint32(config.readUint(".cctpDestinationDomain")),
-                cctpRecipient: ScriptTools.stringToBytes32(config.readString(".cctpRecipient"))
+                cctpRecipient: config.readBytes32(".cctpRecipient")
             })
         );
 

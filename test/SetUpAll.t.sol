@@ -10,7 +10,6 @@ import {IGemMock} from "src/mocks/interfaces/IGemMock.sol";
 import {IVatMock} from "src/mocks/interfaces/IVatMock.sol";
 import {ERC4626Mock} from "src/mocks/ERC4626Mock.sol";
 import {GodMode} from "dss-test/DssTest.sol";
-import {console} from "forge-std/console.sol";
 
 interface MainnetControllerLike {
     function mintUSDS(uint256 usdsAmount) external;
@@ -90,7 +89,7 @@ contract SetUpAllTest is Test {
                 usdcUnitSize: config.readUint(".usdcUnitSize"),
                 susds: address(mocks.susds),
                 cctpDestinationDomain: cctpDestinationDomain,
-                cctpRecipient: ScriptTools.stringToBytes32(config.readString(".cctpRecipient"))
+                cctpRecipient: config.readBytes32(".cctpRecipient")
             })
         );
 
