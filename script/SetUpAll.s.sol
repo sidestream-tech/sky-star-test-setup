@@ -51,7 +51,7 @@ contract SetUpAll is Script {
             relayers: relayers
         });
         ControllerInstance memory controllerInstance = SetUpAllLib.setUpAllocatorAndALMController(params);
-        
+
         // 4. Set up rate limits for the controller
         SetUpAllLib.setMainnetControllerRateLimits(
             SetUpAllLib.RateLimitParams({
