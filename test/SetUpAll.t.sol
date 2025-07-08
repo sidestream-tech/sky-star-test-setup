@@ -192,6 +192,7 @@ contract SetUpAllTest is Test {
         // Swap USDS to USDC
         vm.prank(relayer);
         controller.swapUSDSToUSDC(10 * 10 ** 6); // Swap to 10 USDC
+        vm.assertEq(usdcMock.balanceOf(almProxy), 10 * 10 ** 6, "USDC balance before transfer should be 10 USDC");
 
         // Transfer USDC to CCTP
         vm.prank(relayer);

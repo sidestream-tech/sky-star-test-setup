@@ -23,19 +23,23 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
     
 2. Set the desired ALM `relayer` address inside `script/input/{CHAIN_ID}/input.json`
 
-3. Dry-run a transaction to determine the amount of required gas
+3. Set the desired CCTP `recipient` address inside `script/input/{CHAIN_ID}/input.json`
+
+4. Dry-run a transaction to determine the amount of required gas
     ```sh
     forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv
     ```
 
-4. Get enough gas tokens using a faucet
+5. Get enough gas tokens using a faucet
 
-5. Deploy, configure and verify contracts
+6. (optional) Required for CCTP testing: Get enough testnet USDC from [Circle USDC faucet](https://faucet.circle.com/). This is required by the LitePSM mock contract which expects USDC to be present on the deployer wallet.
+
+7. Deploy, configure and verify contracts
     ```sh
     forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv --broadcast --verify --slow
     ```
 
-6. (optional) Commit generated output folder to record deployed contract addresses 
+8. (optional) Commit generated output folder to record deployed contract addresses 
 
 
 ## Environment Variables
@@ -55,9 +59,7 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
     ```toml
     SEPOLIA_RPC_URL = "https://..."
     ```
-3. Create `script/input/{CHAIN_ID}/input.json` file with relevant content OR if json file already exist, update following fields to the correct value
-    - `cctpRecipient`
-    - `relayer`
+3. Create `script/input/{CHAIN_ID}/input.json` file with relevant content
 4. Add the new verification endpoint to the [`foundry.toml`](./foundry.toml), e.g:
      ```toml
      sepolia = { key = "${ETHERSCAN_API_KEY}", chain = 11155111 }
@@ -71,6 +73,20 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
      forge script script/SetUpAll.s.sol:SetUpAll --fork-url ${CHAIN} -vv
      `````
 
+### `input.json` Configuration Variables
+
+| Variable                | Description                                                                                                                        |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| `ilk`                   | Collateral type identifier (e.g., `"ALLOCATOR_STAR_A"`)                                                                           |
+| `usdcUnitSize`          | Amount of USDC (in smallest units, e.g., wei) to use for testing (default: 10)                                                    |
+| `cctpDestinationDomain` | CCTP destination domain ID for cross-chain messaging ([see supported domains](https://developers.circle.com/cctp/supported-domains))|
+| `usdc`                  | Address of the USDC token contract on the target chain ([see contract addresses](https://developers.circle.com/stablecoins/usdc-contract-addresses)) |
+| `cctpTokenMessenger`    | Address of the CCTP Token Messenger contract on the target chain ([see EVM contracts](https://developers.circle.com/cctp/evm-smart-contracts))         |
+| `relayer`               | Address of the relayer to be used by the ALM controller                                                                           |
+| `cctpRecipient`         | Address of the CCTP transfer recipient (should correspond to the destination domain)                                               |
+
+
+
 
 ### Running Tests
 
@@ -83,7 +99,3 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
     ```sh
     forge test --match-test ${YourTestName} -vvv
     ```
-
-### Preparation for testing
-- PSM uses `deployer` as pocket, which means when `usds` is swapped to `usdc`, the usdc is pulled from `deployer` wallet. So `deployer` wallet should hold valid usdc amount.
-  - USDC faucet: https://faucet.circle.com/
