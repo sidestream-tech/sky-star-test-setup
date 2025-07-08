@@ -21,25 +21,23 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
     - Copy the example environment via `cp .env.dev .env`
     - Edit `.env` to update the variables as described in the "Environment Variables" section below
     
-2. Set the desired ALM `relayer` address inside `script/input/{CHAIN_ID}/input.json`
+2. Set correct variables inside `script/input/{CHAIN_ID}/input.json` based on the "Configuration Variables" section below
 
-3. Set the desired CCTP `recipient` address inside `script/input/{CHAIN_ID}/input.json`
-
-4. Dry-run a transaction to determine the amount of required gas
+3. Dry-run a transaction to determine the amount of required gas
     ```sh
     forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv
     ```
 
-5. Get enough gas tokens using a faucet
+4. Get enough gas tokens using a faucet
 
-6. (optional) Required for CCTP testing: Get enough testnet USDC from [Circle USDC faucet](https://faucet.circle.com/). This is required by the LitePSM mock contract which expects USDC to be present on the deployer wallet.
+5. (optional) Required for CCTP testing: Get enough testnet USDC from [Circle USDC faucet](https://faucet.circle.com/). This is required by the LitePSM mock contract which expects USDC to be present on the deployer wallet.
 
-7. Deploy, configure and verify contracts
+6. Deploy, configure and verify contracts
     ```sh
     forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv --broadcast --verify --slow
     ```
 
-8. (optional) Commit generated output folder to record deployed contract addresses 
+7. (optional) Commit generated output folder to record deployed contract addresses 
 
 
 ## Environment Variables
@@ -79,13 +77,11 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
 |-------------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | `ilk`                   | Collateral type identifier (e.g., `"ALLOCATOR_STAR_A"`)                                                                           |
 | `usdcUnitSize`          | Amount of USDC (in smallest units, e.g., wei) to use for testing (default: 10)                                                    |
-| `cctpDestinationDomain` | CCTP destination domain ID for cross-chain messaging ([see supported domains](https://developers.circle.com/cctp/supported-domains))|
-| `usdc`                  | Address of the USDC token contract on the target chain ([see contract addresses](https://developers.circle.com/stablecoins/usdc-contract-addresses)) |
-| `cctpTokenMessenger`    | Address of the CCTP Token Messenger contract on the target chain ([see EVM contracts](https://developers.circle.com/cctp/evm-smart-contracts))         |
-| `relayer`               | Address of the relayer to be used by the ALM controller                                                                           |
+| `cctpDestinationDomain` | CCTP destination domain ID for cross-chain messaging ([see supported domains](https://developers.circle.com/cctp/evm-smart-contracts#tokenmessenger-testnet))|
+| `cctpTokenMessenger`    | Address of the CCTP Token Messenger contract on the target chain ([see EVM contracts](https://developers.circle.com/cctp/evm-smart-contracts#tokenmessenger-testnet))         |
 | `cctpRecipient`         | Address of the CCTP transfer recipient (should correspond to the destination domain)                                               |
-
-
+| `usdc`                  | Address of the USDC token contract on the target chain ([see contract addresses](https://developers.circle.com/stablecoins/usdc-contract-addresses)) |
+| `relayer`               | Address of the relayer to be used by the ALM controller                                                                           |
 
 
 ### Running Tests

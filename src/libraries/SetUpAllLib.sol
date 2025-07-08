@@ -118,7 +118,6 @@ library SetUpAllLib {
 
         // 1.1 Set ilk parameters
         vat.file(params.ilk, "line", 10_000_000 * RAD); // 1 million line
-        jug.file(params.ilk, "duty", 1000000000000000000000000000); // 0% duty
 
         // 2. Add buffer to registry
         RegistryLike(params.sharedInstance.registry).file(params.ilk, "buffer", params.ilkInstance.buffer);
