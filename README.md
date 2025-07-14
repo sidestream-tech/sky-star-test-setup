@@ -23,21 +23,23 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
     
 2. Set correct variables inside `script/input/{CHAIN_ID}/input.json` based on the "Configuration Variables" section below
 
-3. Dry-run a transaction to determine the amount of required gas
+3. Create correct output folders in `script` (`script/output/{CHAIN_ID}/dry-run/`) to log created contracts address correctly
+
+4. Dry-run a transaction to determine the amount of required gas
     ```sh
     forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv
     ```
 
-4. Get enough gas tokens using a faucet
+5. Get enough gas tokens using a faucet
 
-5. (optional) Required for CCTP testing: Get enough testnet USDC from [Circle USDC faucet](https://faucet.circle.com/). This is required by the LitePSM mock contract which expects USDC to be present on the deployer wallet.
+6. (optional) Required for CCTP testing: Get enough testnet USDC from [Circle USDC faucet](https://faucet.circle.com/). This is required by the LitePSM mock contract which expects USDC to be present on the deployer wallet.
 
-6. Deploy, configure and verify contracts
+7. Deploy, configure and verify contracts
     ```sh
     forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv --broadcast --verify --slow
     ```
 
-7. (optional) Commit generated output folder to record deployed contract addresses 
+8. (optional) Commit generated `broadcast/SetUpAll.s.sol/11155111/run-latest.json` and `script/output/11155111/output-latest.json` to record deployed contract addresses 
 
 
 ## Environment Variables
