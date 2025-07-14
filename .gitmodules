@@ -1,0 +1,6 @@
+[submodule "lib/dss-allocator"]
+	path = lib/dss-allocator
+	url = https://github.com/sky-ecosystem/dss-allocator
+[submodule "lib/sky-star-alm-controller"]
+	path = lib/sky-star-alm-controller
+	url = https://github.com/sidestream-tech/sky-star-alm-controller

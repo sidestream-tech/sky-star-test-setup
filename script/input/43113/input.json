@@ -1,0 +1,6 @@
+{
+  "relayer": "0x1234567890abcdef1234567890abcdef12345678",
+  "cctpTokenMessenger": "0xeb08f243E5d3FCFF26A9E38Ae5520A669f4019d0",
+  "ilk": "ALLOCATOR_STAR_A",
+  "usdcUnitSize": 10
+}
