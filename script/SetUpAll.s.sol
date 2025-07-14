@@ -20,7 +20,10 @@ contract SetUpAll is Script {
     function setUp() public {}
 
     function run() public {
+        vm.setEnv("FOUNDRY_EXPORTS_OVERWRITE_LATEST", "true");
+
         VmSafe.Wallet memory deployer = vm.createWallet(vm.envUint("PRIVATE_KEY"));
+
         address admin = deployer.addr;
 
         string memory config = ScriptTools.loadConfig("input");
@@ -30,8 +33,8 @@ contract SetUpAll is Script {
         vm.startBroadcast(deployer.privateKey);
 
         // 1. Deploy mock contracts
-        MockContracts memory mocks = SetUpAllLib.deployMockContracts(usdc, admin);
-
+        MockContracts memory mocks =  SetUpAllLib.deployMockContracts(usdc, admin);
+        
         // 2. Deploy AllocatorSystem
         AllocatorSharedInstance memory sharedInstance = AllocatorDeploy.deployShared(deployer.addr, admin);
         AllocatorIlkInstance memory ilkInstance =
@@ -64,5 +67,21 @@ contract SetUpAll is Script {
         );
 
         vm.stopBroadcast();
+
+        // 5. Log contract addresses
+        bool isBroadCast = vm.isContext(VmSafe.ForgeContext.ScriptBroadcast);
+        string memory outputSlug = isBroadCast ? "output" : "dry-run/output";
+        ScriptTools.exportContract(outputSlug, "almProxy",   controllerInstance.almProxy);
+        ScriptTools.exportContract(outputSlug, "controller",   controllerInstance.controller);
+        ScriptTools.exportContract(outputSlug, "rateLimits",   controllerInstance.rateLimits);
+        ScriptTools.exportContract(outputSlug, "dai", mocks.dai);
+        ScriptTools.exportContract(outputSlug, "daiJoin", mocks.daiJoin);
+        ScriptTools.exportContract(outputSlug, "daiUsds", mocks.daiUsds);
+        ScriptTools.exportContract(outputSlug, "usds", mocks.usds);
+        ScriptTools.exportContract(outputSlug, "usdsJoin", mocks.usdsJoin);
+        ScriptTools.exportContract(outputSlug, "susds", mocks.susds);
+        ScriptTools.exportContract(outputSlug, "vat", mocks.vat);
+        ScriptTools.exportContract(outputSlug, "jug", mocks.jug);
+        ScriptTools.exportContract(outputSlug, "psm", mocks.psm);
     }
 }
