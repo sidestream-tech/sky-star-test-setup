@@ -33,8 +33,8 @@ contract SetUpAll is Script {
         vm.startBroadcast(deployer.privateKey);
 
         // 1. Deploy mock contracts
-        MockContracts memory mocks =  SetUpAllLib.deployMockContracts(usdc, admin);
-        
+        MockContracts memory mocks = SetUpAllLib.deployMockContracts(usdc, admin);
+
         // 2. Deploy AllocatorSystem
         AllocatorSharedInstance memory sharedInstance = AllocatorDeploy.deployShared(deployer.addr, admin);
         AllocatorIlkInstance memory ilkInstance =
@@ -71,9 +71,9 @@ contract SetUpAll is Script {
         // 5. Log contract addresses
         bool isBroadCast = vm.isContext(VmSafe.ForgeContext.ScriptBroadcast);
         string memory outputSlug = isBroadCast ? "output" : "dry-run/output";
-        ScriptTools.exportContract(outputSlug, "almProxy",   controllerInstance.almProxy);
-        ScriptTools.exportContract(outputSlug, "controller",   controllerInstance.controller);
-        ScriptTools.exportContract(outputSlug, "rateLimits",   controllerInstance.rateLimits);
+        ScriptTools.exportContract(outputSlug, "almProxy", controllerInstance.almProxy);
+        ScriptTools.exportContract(outputSlug, "controller", controllerInstance.controller);
+        ScriptTools.exportContract(outputSlug, "rateLimits", controllerInstance.rateLimits);
         ScriptTools.exportContract(outputSlug, "dai", mocks.dai);
         ScriptTools.exportContract(outputSlug, "daiJoin", mocks.daiJoin);
         ScriptTools.exportContract(outputSlug, "daiUsds", mocks.daiUsds);
