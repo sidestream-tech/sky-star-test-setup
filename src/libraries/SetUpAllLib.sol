@@ -13,6 +13,7 @@ import {MainnetController} from "sky-star-alm-controller/src/MainnetController.s
 import {VatMock} from "src/mocks/VatMock.sol";
 import {DaiMock} from "src/mocks/DaiMock.sol";
 import {UsdsMock} from "src/mocks/UsdsMock.sol";
+import {GemMock} from "src/mocks/GemMock.sol";
 import {UsdsJoinMock} from "src/mocks/UsdsJoinMock.sol";
 import {DaiJoinMock} from "src/mocks/DaiJoinMock.sol";
 import {DaiUsdsMock} from "src/mocks/DaiUsdsMock.sol";
