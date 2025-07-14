@@ -33,7 +33,7 @@ contract SetUpAll is Script {
         vm.startBroadcast(deployer.privateKey);
 
         // 1. Deploy mock contracts
-        MockContracts memory mocks = SetUpAllLib.deployMockContracts(usdc, admin);
+        MockContracts memory mocks = SetUpAllLib.deployMockContracts(usdc, admin, config.readAddress(".layerZeroEndpoint"));
 
         // 2. Deploy AllocatorSystem
         AllocatorSharedInstance memory sharedInstance = AllocatorDeploy.deployShared(deployer.addr, admin);
@@ -60,9 +60,12 @@ contract SetUpAll is Script {
             SetUpAllLib.RateLimitParams({
                 controllerInstance: controllerInstance,
                 usdcUnitSize: config.readUint(".usdcUnitSize"),
+                usds: address(mocks.usds),
                 susds: address(mocks.susds),
                 cctpDestinationDomain: uint32(config.readUint(".cctpDestinationDomain")),
-                cctpRecipient: config.readBytes32(".cctpRecipient")
+                cctpRecipient: config.readBytes32(".cctpRecipient"),
+                destinationEndpointId: uint32(config.readUint(".layerZeroDestinationEndpointId")),
+                layerZeroRecipient: config.readBytes32(".layerZeroRecipient")
             })
         );
 

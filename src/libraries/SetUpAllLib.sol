@@ -32,8 +32,10 @@ interface MainnetControllerLike {
     function LIMIT_USDS_TO_USDC() external returns (bytes32);
     function LIMIT_USDC_TO_DOMAIN() external returns (bytes32);
     function LIMIT_USDC_TO_CCTP() external returns (bytes32);
+    function LIMIT_LAYERZERO_TRANSFER() external returns (bytes32);
 
     function setMintRecipient(uint32 destinationDomain, bytes32 mintRecipient) external;
+    function setLayerZeroRecipient(uint32 destinationEndpointId, bytes32 layerZeroRecipient) external;
 }
 
 interface RegistryLike {
@@ -70,18 +72,21 @@ library SetUpAllLib {
     struct RateLimitParams {
         ControllerInstance controllerInstance;
         uint256 usdcUnitSize;
+        address usds;
         address susds;
         uint32 cctpDestinationDomain;
         bytes32 cctpRecipient;
+        uint32 destinationEndpointId;
+        bytes32 layerZeroRecipient;
     }
 
-    function deployMockContracts(address usdc, address pocket) internal returns (MockContracts memory mocks) {
+    function deployMockContracts(address usdc, address pocket, address layerZeroEndpoint) internal returns (MockContracts memory mocks) {
         bytes32 psmIlk = "MCD_LITE_PSM_USDC";
 
         // 1. Deploy mock contracts
         VatMock vat = new VatMock();
         mocks.vat = address(vat);
-        mocks.usds = address(new UsdsMock());
+        mocks.usds = address(new UsdsMock(layerZeroEndpoint));
         mocks.usdsJoin = address(new UsdsJoinMock(VatMock(mocks.vat), GemMock(mocks.usds)));
         mocks.dai = address(new DaiMock());
         mocks.daiJoin = address(new DaiJoinMock(VatMock(mocks.vat), GemMock(mocks.dai)));
@@ -188,7 +193,7 @@ library SetUpAllLib {
         );
     }
 
-    // Rate limits value copied from https://github.com/sparkdotfi/spark-alm-controller/blob/7f0a473951e4c5528d52ee442461662976c4a947/script/staging/FullStagingDeploy.s.sol#L381
+    // Rate limits value copied from https:gi//github.com/sparkdotfi/spark-alm-controller/blob/7f0a473951e4c5528d52ee442461662976c4a947/script/staging/FullStagingDeploy.s.sol#L381
     function setMainnetControllerRateLimits(RateLimitParams memory params) internal {
         IRateLimits rateLimits = IRateLimits(params.controllerInstance.rateLimits);
         MainnetControllerLike controller = MainnetControllerLike(params.controllerInstance.controller);
@@ -217,5 +222,17 @@ library SetUpAllLib {
             RateLimitHelpers.makeDomainKey(controller.LIMIT_USDC_TO_DOMAIN(), params.cctpDestinationDomain);
         rateLimits.setRateLimitData(domainKey, maxAmount6, slope6);
         rateLimits.setUnlimitedRateLimitData(controller.LIMIT_USDC_TO_CCTP());
+
+        // transferTokenLayerZero rate limits
+        controller.setLayerZeroRecipient(params.destinationEndpointId, params.layerZeroRecipient);
+        rateLimits.setRateLimitData(
+            keccak256(abi.encode(
+                controller.LIMIT_LAYERZERO_TRANSFER(),
+                params.usds,
+                params.destinationEndpointId
+            )),
+            10_000_000e18, // 10 million USDS
+            0
+        );
     }
 }
