@@ -11,7 +11,8 @@ import {ALMProxy} from "sky-star-alm-controller/src/ALMProxy.sol";
 import {RateLimits} from "sky-star-alm-controller/src/RateLimits.sol";
 import {MainnetController} from "sky-star-alm-controller/src/MainnetController.sol";
 import {VatMock} from "src/mocks/VatMock.sol";
-import {GemMock} from "src/mocks/GemMock.sol";
+import {DaiMock} from "src/mocks/DaiMock.sol";
+import {UsdsMock} from "src/mocks/UsdsMock.sol";
 import {UsdsJoinMock} from "src/mocks/UsdsJoinMock.sol";
 import {DaiJoinMock} from "src/mocks/DaiJoinMock.sol";
 import {DaiUsdsMock} from "src/mocks/DaiUsdsMock.sol";
@@ -20,7 +21,7 @@ import {JugMock} from "src/mocks/JugMock.sol";
 import {IVatMock} from "src/mocks/interfaces/IVatMock.sol";
 import {IJugMock} from "src/mocks/interfaces/IJugMock.sol";
 import {IGemMock} from "src/mocks/interfaces/IGemMock.sol";
-import {ERC4626Mock} from "src/mocks/ERC4626Mock.sol";
+import {SusdsMock} from "src/mocks/SusdsMock.sol";
 import {PSMMock} from "src/mocks/PSMMock.sol";
 
 interface MainnetControllerLike {
@@ -79,14 +80,14 @@ library SetUpAllLib {
         // 1. Deploy mock contracts
         VatMock vat = new VatMock();
         mocks.vat = address(vat);
-        mocks.usds = address(new GemMock());
+        mocks.usds = address(new UsdsMock());
         mocks.usdsJoin = address(new UsdsJoinMock(VatMock(mocks.vat), GemMock(mocks.usds)));
-        mocks.dai = address(new GemMock());
+        mocks.dai = address(new DaiMock());
         mocks.daiJoin = address(new DaiJoinMock(VatMock(mocks.vat), GemMock(mocks.dai)));
         mocks.daiUsds = address(new DaiUsdsMock(mocks.daiJoin, mocks.usdsJoin));
         JugMock jug = new JugMock(VatMock(mocks.vat));
         mocks.jug = address(jug);
-        mocks.susds = address(new ERC4626Mock(GemMock(mocks.usds)));
+        mocks.susds = address(new SusdsMock(GemMock(mocks.usds)));
         mocks.psm = address(new LitePsmMock(psmIlk, usdc, mocks.daiJoin, pocket));
 
         // 2. Rely Usds on UsdsJoin
