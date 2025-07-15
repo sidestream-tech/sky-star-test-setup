@@ -180,7 +180,8 @@ library SetUpAllLib {
             mintRecipient: params.cctpRecipient
         });
 
-        MainnetControllerInit.LayerZeroRecipient[] memory layerZeroRecipients = new MainnetControllerInit.LayerZeroRecipient[](1);
+        MainnetControllerInit.LayerZeroRecipient[] memory layerZeroRecipients =
+            new MainnetControllerInit.LayerZeroRecipient[](1);
         layerZeroRecipients[0] = MainnetControllerInit.LayerZeroRecipient({
             destinationEndpointId: params.destinationEndpointId,
             recipient: params.layerZeroRecipient

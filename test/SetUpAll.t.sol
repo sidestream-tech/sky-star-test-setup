@@ -11,7 +11,7 @@ import {IVatMock} from "src/mocks/interfaces/IVatMock.sol";
 import {ERC4626Mock} from "src/mocks/ERC4626Mock.sol";
 import {GodMode} from "dss-test/DssTest.sol";
 
-interface MainnetControllerLike{
+interface MainnetControllerLike {
     function mintUSDS(uint256 usdsAmount) external;
     function burnUSDS(uint256 usdsAmount) external;
     function depositERC4626(address token, uint256 amount) external returns (uint256 shares);
