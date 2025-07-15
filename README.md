@@ -59,11 +59,27 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
 ## Test `MainnetController.transferTokenLayerZero`
 To test LayerZero-related functionality, the following points MUST be executed in the provided order:
 (NOTE: This instruction is `Solana` specific)
-1. Deploy `oft` on the destination domain
-2. (For Solana) Create token account of layerZero transfer recipient  
-3. Add recipient address to `layerZeroRecipient` in  `script/input/{chainId}/input.json`  
-4. Execute test setup script following [`Quick Start`](#quick-start)
-5. Wire deployed `usds` to `oft` on destination domain
+1. Follow README from [this repo](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana) UP UNTIL [`Deploy a sepolia OFT peer`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L255)
+   - `lz-oapp` project can be created locally following [`Get the code`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L50) section
+   - Already deployed OFT program can be used: `ENP58syDWoSp6SS1CvndMgSB3daB9UpNYWmob7rzUh97`. In this case [`Prepare the OFT Program ID`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L110) and [`Building and Deploying the Solana OFT Program`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L135) steps can be skipped (Please be mindful that `Upgrade Authority` belongs to program deployer)
+   - In [`Create the Solana OFT`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L204) section, instruction for [`For OFT:`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L212) can be followed
+2. Generate deployed oft token address for the layerZero transfer recipient
+   1. Create token address
+   ```sh
+   spl-token create-account <TOKEN_MINT>
+   ```
+   2. Convert Solana token address from base58 to hex value using [encoder](https://appdevtools.com/base58-encoder-decoder)
+      1. Select `Decode` tab
+      2. Update `Treat Output As` to `HEX`
+3. `sky-star-test-setup` project: Add converted recipient address under `layerZeroRecipient` in `script/input/{chainId}/input.json`
+4. `sky-star-test-setup` project: Deploy OTF(`UsdsMock`) on EVM chain by following the rest of the steps in [`Quick Start`](#quick-start) section
+5. `lz-oapp` project: Wire deployed OTF(`UsdsMock`) on EVM to `oft` on Solana (deployed from Step 1) follow [`Initialize the OFT Program's SendConfig and ReceiveConfig Accounts`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L263) and [`Wire`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L273C5-L273C9) Sections
+6. Test `MainnetController.transferTokenLayerZero` 
+    1. Call `MainnetController.mintUsds` (eg. `MainnetController.minUsds(1000000000000000000)` - mint 1 usds)
+    2. Call `MainnetController.transferTokenLayerZero` (eg. `MainnetController.transferTokenLayerZero{value: 0.0005}(evmUsdsAddress, 1000000000000000000, 40168)` - transfer 1 usds)
+         - NOTE: native token needs to be send to cover LZ fee. The used values are example with safe bumper.
+7. Transaction can be found from: `https://testnet.layerzeroscan.com/address/{usdsTokenAddress}` 
+   - Token should be transferred to recipient wallet on Solana when tx status is updated to `delivered`
 
 ### How to deploy `oft` on Solana
 - Deploy program: https://docs.layerzero.network/v2/developers/solana/oft/program
