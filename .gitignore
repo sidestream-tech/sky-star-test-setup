@@ -7,6 +7,11 @@ out/
 /broadcast/*/*/run-[0-9]*.json
 /broadcast/**/dry-run/
 
+# Ignores development address logs
+!/script/output
+/script/output/*/output-[0-9]*.json
+/script/output/*/dry-run/*.json
+
 # Docs
 docs/
 

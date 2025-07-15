@@ -20,16 +20,20 @@ contract SetUpAll is Script {
     function setUp() public {}
 
     function run() public {
+        vm.setEnv("FOUNDRY_EXPORTS_OVERWRITE_LATEST", "true");
+
         VmSafe.Wallet memory deployer = vm.createWallet(vm.envUint("PRIVATE_KEY"));
+
         address admin = deployer.addr;
 
         string memory config = ScriptTools.loadConfig("input");
         bytes32 ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
+        address usdc = config.readAddress(".usdc");
 
         vm.startBroadcast(deployer.privateKey);
 
         // 1. Deploy mock contracts
-        MockContracts memory mocks = SetUpAllLib.deployMockContracts();
+        MockContracts memory mocks = SetUpAllLib.deployMockContracts(usdc, admin);
 
         // 2. Deploy AllocatorSystem
         AllocatorSharedInstance memory sharedInstance = AllocatorDeploy.deployShared(deployer.addr, admin);
@@ -40,23 +44,44 @@ contract SetUpAll is Script {
         address[] memory relayers = new address[](1);
         relayers[0] = config.readAddress(".relayer");
 
-        ControllerInstance memory controllerInstance = SetUpAllLib.setUpAllocatorAndALMController({
+        SetUpAllLib.AllocatorSetupParams memory params = SetUpAllLib.AllocatorSetupParams({
             ilk: ilk,
             ilkInstance: ilkInstance,
             sharedInstance: sharedInstance,
-            mocks: mocks,
             admin: admin,
+            mocks: mocks,
             cctp: config.readAddress(".cctpTokenMessenger"),
             relayers: relayers
         });
+        ControllerInstance memory controllerInstance = SetUpAllLib.setUpAllocatorAndALMController(params);
 
         // 4. Set up rate limits for the controller
-        SetUpAllLib.setMainnetControllerRateLimits({
-            controllerInstance: controllerInstance,
-            usdcUnitSize: config.readUint(".usdcUnitSize"),
-            susds: address(mocks.susds)
-        });
+        SetUpAllLib.setMainnetControllerRateLimits(
+            SetUpAllLib.RateLimitParams({
+                controllerInstance: controllerInstance,
+                usdcUnitSize: config.readUint(".usdcUnitSize"),
+                susds: address(mocks.susds),
+                cctpDestinationDomain: uint32(config.readUint(".cctpDestinationDomain")),
+                cctpRecipient: config.readBytes32(".cctpRecipient")
+            })
+        );
 
         vm.stopBroadcast();
+
+        // 5. Log contract addresses
+        bool isBroadCast = vm.isContext(VmSafe.ForgeContext.ScriptBroadcast);
+        string memory outputSlug = isBroadCast ? "output" : "dry-run/output";
+        ScriptTools.exportContract(outputSlug, "almProxy", controllerInstance.almProxy);
+        ScriptTools.exportContract(outputSlug, "controller", controllerInstance.controller);
+        ScriptTools.exportContract(outputSlug, "rateLimits", controllerInstance.rateLimits);
+        ScriptTools.exportContract(outputSlug, "dai", mocks.dai);
+        ScriptTools.exportContract(outputSlug, "daiJoin", mocks.daiJoin);
+        ScriptTools.exportContract(outputSlug, "daiUsds", mocks.daiUsds);
+        ScriptTools.exportContract(outputSlug, "usds", mocks.usds);
+        ScriptTools.exportContract(outputSlug, "usdsJoin", mocks.usdsJoin);
+        ScriptTools.exportContract(outputSlug, "susds", mocks.susds);
+        ScriptTools.exportContract(outputSlug, "vat", mocks.vat);
+        ScriptTools.exportContract(outputSlug, "jug", mocks.jug);
+        ScriptTools.exportContract(outputSlug, "psm", mocks.psm);
     }
 }

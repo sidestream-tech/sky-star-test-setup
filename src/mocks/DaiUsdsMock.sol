@@ -18,10 +18,15 @@ contract DaiUsdsMock {
     constructor(address daiJoin_, address usdsJoin_) {
         daiJoin = DaiJoinMock(daiJoin_);
         usdsJoin = UsdsJoinMock(usdsJoin_);
+
+        VatMock vat = VatMock(address(daiJoin.vat()));
+
         dai = GemMock(address(daiJoin.dai()));
         usds = GemMock(address(usdsJoin.usds()));
 
-        VatMock vat = VatMock(address(daiJoin.vat()));
+        dai.approve(address(daiJoin), type(uint256).max);
+        usds.approve(address(usdsJoin), type(uint256).max);
+
         vat.hope(address(daiJoin));
         vat.hope(address(usdsJoin));
     }
