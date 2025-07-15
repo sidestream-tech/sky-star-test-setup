@@ -11,7 +11,7 @@ import {IVatMock} from "src/mocks/interfaces/IVatMock.sol";
 import {ERC4626Mock} from "src/mocks/ERC4626Mock.sol";
 import {GodMode} from "dss-test/DssTest.sol";
 
-interface MainnetControllerLike {
+interface MainnetControllerLike{
     function mintUSDS(uint256 usdsAmount) external;
     function burnUSDS(uint256 usdsAmount) external;
     function depositERC4626(address token, uint256 amount) external returns (uint256 shares);
@@ -20,7 +20,7 @@ interface MainnetControllerLike {
     function swapUSDSToUSDC(uint256 usdcAmount) external;
     function swapUSDCToUSDS(uint256 usdcAmount) external;
     function transferUSDCToCCTP(uint256 usdcAmount, uint32 destinationDomain) external;
-    function transferTokenLayerZero(address oftAddress, uint256 amount, uint32  destinationEndpointId) external;
+    function transferTokenLayerZero(address oftAddress, uint256 amount, uint32 destinationEndpointId) external;
 }
 
 contract SetUpAllTest is Test {
@@ -80,7 +80,11 @@ contract SetUpAllTest is Test {
             mocks: mocks,
             admin: admin,
             cctp: config.readAddress(".cctpTokenMessenger"),
-            relayers: relayers
+            relayers: relayers,
+            cctpDestinationDomain: cctpDestinationDomain,
+            cctpRecipient: config.readBytes32(".cctpRecipient"),
+            destinationEndpointId: layerZeroDestinationEndpointId,
+            layerZeroRecipient: config.readBytes32(".layerZeroRecipient")
         });
         controllerInstance = SetUpAllLib.setUpAllocatorAndALMController(params);
 
@@ -92,9 +96,7 @@ contract SetUpAllTest is Test {
                 usds: address(mocks.usds),
                 susds: address(mocks.susds),
                 cctpDestinationDomain: cctpDestinationDomain,
-                cctpRecipient: config.readBytes32(".cctpRecipient"),
-                destinationEndpointId: layerZeroDestinationEndpointId,
-                layerZeroRecipient: config.readBytes32(".layerZeroRecipient")
+                destinationEndpointId: layerZeroDestinationEndpointId
             })
         );
 
@@ -203,21 +205,5 @@ contract SetUpAllTest is Test {
         controller.transferUSDCToCCTP(5 * 10 ** 6, cctpDestinationDomain); // Transfer 5 USDC
 
         vm.assertEq(usdcMock.balanceOf(almProxy), 5 * 10 ** 6, "USDC balance after transfer should be 5 USDC");
-    }
-
-    function testTransferTokenLayerZero() public {
-        IGemMock usdsMock = IGemMock(mocks.usds);
-        address almProxy = controllerInstance.almProxy;
-        MainnetControllerLike controller = MainnetControllerLike(controllerInstance.controller);
-
-        // Mint USDS
-        vm.prank(relayer);
-        controller.mintUSDS(10 * WAD); // Mint 10 USDS
-
-        // Transfer USDS via LayerZero
-        vm.prank(relayer);
-        controller.transferTokenLayerZero(mocks.usds, 5 * WAD, layerZeroDestinationEndpointId); // Transfer 5 USDS
-
-        vm.assertEq(usdsMock.balanceOf(almProxy), 5 * WAD, "USDS balance after LayerZero transfer should be 5 WAD");
     }
 }

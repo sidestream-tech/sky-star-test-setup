@@ -67,6 +67,10 @@ library SetUpAllLib {
         MockContracts mocks;
         address cctp;
         address[] relayers;
+        uint32 destinationEndpointId;
+        bytes32 layerZeroRecipient;
+        uint32 cctpDestinationDomain;
+        bytes32 cctpRecipient;
     }
 
     struct RateLimitParams {
@@ -74,13 +78,14 @@ library SetUpAllLib {
         uint256 usdcUnitSize;
         address usds;
         address susds;
-        uint32 cctpDestinationDomain;
-        bytes32 cctpRecipient;
         uint32 destinationEndpointId;
-        bytes32 layerZeroRecipient;
+        uint32 cctpDestinationDomain;
     }
 
-    function deployMockContracts(address usdc, address pocket, address layerZeroEndpoint) internal returns (MockContracts memory mocks) {
+    function deployMockContracts(address usdc, address pocket, address layerZeroEndpoint)
+        internal
+        returns (MockContracts memory mocks)
+    {
         bytes32 psmIlk = "MCD_LITE_PSM_USDC";
 
         // 1. Deploy mock contracts
@@ -169,7 +174,17 @@ library SetUpAllLib {
         );
 
         // 8. Set up ALM controller
-        MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](0);
+        MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](1);
+        mintRecipients[0] = MainnetControllerInit.MintRecipient({
+            domain: params.cctpDestinationDomain,
+            mintRecipient: params.cctpRecipient
+        });
+
+        MainnetControllerInit.LayerZeroRecipient[] memory layerZeroRecipients = new MainnetControllerInit.LayerZeroRecipient[](1);
+        layerZeroRecipients[0] = MainnetControllerInit.LayerZeroRecipient({
+            destinationEndpointId: params.destinationEndpointId,
+            recipient: params.layerZeroRecipient
+        });
 
         MainnetControllerInit.initAlmSystem(
             params.ilkInstance.vault,
@@ -189,7 +204,8 @@ library SetUpAllLib {
                 daiUsds: params.mocks.daiUsds,
                 cctp: params.cctp
             }),
-            mintRecipients
+            mintRecipients,
+            layerZeroRecipients
         );
     }
 
@@ -217,20 +233,14 @@ library SetUpAllLib {
         rateLimits.setRateLimitData(controller.LIMIT_USDS_TO_USDC(), maxAmount6, slope6);
 
         // transferUSDCToCCTP rate limits
-        controller.setMintRecipient(params.cctpDestinationDomain, params.cctpRecipient);
         bytes32 domainKey =
             RateLimitHelpers.makeDomainKey(controller.LIMIT_USDC_TO_DOMAIN(), params.cctpDestinationDomain);
         rateLimits.setRateLimitData(domainKey, maxAmount6, slope6);
         rateLimits.setUnlimitedRateLimitData(controller.LIMIT_USDC_TO_CCTP());
 
         // transferTokenLayerZero rate limits
-        controller.setLayerZeroRecipient(params.destinationEndpointId, params.layerZeroRecipient);
         rateLimits.setRateLimitData(
-            keccak256(abi.encode(
-                controller.LIMIT_LAYERZERO_TRANSFER(),
-                params.usds,
-                params.destinationEndpointId
-            )),
+            keccak256(abi.encode(controller.LIMIT_LAYERZERO_TRANSFER(), params.usds, params.destinationEndpointId)),
             10_000_000e18, // 10 million USDS
             0
         );

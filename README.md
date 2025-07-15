@@ -24,10 +24,13 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
 2. Set correct variables inside `script/input/{CHAIN_ID}/input.json` based on the "Configuration Variables" section below
 
 3. Create correct output folders in `script` (`script/output/{CHAIN_ID}/dry-run/`) to log created contracts address correctly
+    ```sh
+    mkdir -p script/output/{CHAIN_ID}/dry-run/
+    ```
 
 4. Dry-run a transaction to determine the amount of required gas
     ```sh
-    forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv
+    forge script script/SetUpAll.s.sol:SetUpAll --fork-url sepolia -vv
     ```
 
 5. Get enough gas tokens using a faucet
@@ -36,7 +39,7 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
 
 7. Deploy, configure and verify contracts
     ```sh
-    forge script script/SetUpAll.s.sol:SetUpAll --fork-url fuji -vv --broadcast --verify --slow
+    forge script script/SetUpAll.s.sol:SetUpAll --fork-url sepolia -vv --broadcast --verify --slow
     ```
 
 8. (optional) Commit generated `broadcast/SetUpAll.s.sol/11155111/run-latest.json` and `script/output/11155111/output-latest.json` to record deployed contract addresses 

@@ -29,11 +29,14 @@ contract SetUpAll is Script {
         string memory config = ScriptTools.loadConfig("input");
         bytes32 ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
         address usdc = config.readAddress(".usdc");
+        uint32 cctpDestinationDomain = uint32(config.readUint(".cctpDestinationDomain"));
+        uint32 layerZeroDestinationEndpointId = uint32(config.readUint(".layerZeroDestinationEndpointId"));
 
         vm.startBroadcast(deployer.privateKey);
 
         // 1. Deploy mock contracts
-        MockContracts memory mocks = SetUpAllLib.deployMockContracts(usdc, admin, config.readAddress(".layerZeroEndpoint"));
+        MockContracts memory mocks =
+            SetUpAllLib.deployMockContracts(usdc, admin, config.readAddress(".layerZeroEndpoint"));
 
         // 2. Deploy AllocatorSystem
         AllocatorSharedInstance memory sharedInstance = AllocatorDeploy.deployShared(deployer.addr, admin);
@@ -51,7 +54,11 @@ contract SetUpAll is Script {
             admin: admin,
             mocks: mocks,
             cctp: config.readAddress(".cctpTokenMessenger"),
-            relayers: relayers
+            relayers: relayers,
+            cctpDestinationDomain: cctpDestinationDomain,
+            cctpRecipient: config.readBytes32(".cctpRecipient"),
+            destinationEndpointId: layerZeroDestinationEndpointId,
+            layerZeroRecipient: config.readBytes32(".layerZeroRecipient")
         });
         ControllerInstance memory controllerInstance = SetUpAllLib.setUpAllocatorAndALMController(params);
 
@@ -62,10 +69,8 @@ contract SetUpAll is Script {
                 usdcUnitSize: config.readUint(".usdcUnitSize"),
                 usds: address(mocks.usds),
                 susds: address(mocks.susds),
-                cctpDestinationDomain: uint32(config.readUint(".cctpDestinationDomain")),
-                cctpRecipient: config.readBytes32(".cctpRecipient"),
-                destinationEndpointId: uint32(config.readUint(".layerZeroDestinationEndpointId")),
-                layerZeroRecipient: config.readBytes32(".layerZeroRecipient")
+                cctpDestinationDomain: cctpDestinationDomain,
+                destinationEndpointId: layerZeroDestinationEndpointId
             })
         );
 
