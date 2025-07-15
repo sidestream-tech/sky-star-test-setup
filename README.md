@@ -17,6 +17,8 @@ Easily deploy the Sky allocation system and Spark ALM controller to any EVM-comp
 
 To deploy and configure contracts to the Avalanche Fuji public testnet:
 
+0. (optional) Deploy and wire `oft` on `destinationToken` following [the instruction](#test-mainnetcontrollertransfertokenlayerzero)
+
 1. Set environment variables
     - Copy the example environment via `cp .env.dev .env`
     - Edit `.env` to update the variables as described in the "Environment Variables" section below
@@ -44,21 +46,19 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
 
 8. (optional) Commit generated `broadcast/SetUpAll.s.sol/11155111/run-latest.json` and `script/output/11155111/output-latest.json` to record deployed contract addresses 
 
-9. Deploy and wire `oft` on `destinationToken` following [the instruction](#test-mainnetcontrollertransfertokenlayerzero)
-
 ## Environment Variables
 
 | Variable              | Description                                                                 |
 |-----------------------|-----------------------------------------------------------------------------|
 | `PRIVATE_KEY`         | Deployer's private key (used as admin for all contracts)                    |
 | `FOUNDRY_ROOT_CHAINID`| Chain ID for deployment                                                     |
-| `SEPOLIA_RPC_URL`        | RPC URL for Ethereum Sepolia                                                  |
-| `ETHERSCAN_API_KEY`        | Etherscan api key to verify deployed contracts                                                  |
+| `SEPOLIA_RPC_URL`     | RPC URL for Ethereum Sepolia                                                |
+| `FUJI_RPC_URL`        | RPC URL for Avalanche Fuji                                                  |
+| `ETHERSCAN_API_KEY`   | Etherscan api key to verify deployed contracts                              |
 
 ## Test `MainnetController.transferTokenLayerZero`
-To use `MainnetController.transferTokenLayerZero`, [`oft`](https://docs.layerzero.network/v2/developers/evm/oft/quickstart) should be deployed on the destination domain and then [wired](https://docs.layerzero.network/v2/developers/evm/oft/quickstart#deployment-and-wiring) to usds that was deployed from this script. 
-
-It can be done in the following order
+To test LayerZero-related functionality, the following points MUST be executed in the provided order:
+(NOTE: This instruction is `Solana` specific)
 1. Deploy `oft` on the destination domain
 2. (For Solana) Create token account of layerZero transfer recipient  
 3. Add recipient address to `layerZeroRecipient` in  `script/input/{chainId}/input.json`  
