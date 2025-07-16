@@ -2,11 +2,13 @@
 
 Easily deploy the Sky allocation system and Spark ALM controller to any EVM-compatible chain, including all required mock contracts. This repository is designed to help Sky Stars test and validate contracts quickly. 
 
+
 ## Included Deployments
 
 - [`dss-allocator`](https://github.com/sky-ecosystem/dss-allocator)
 - [`spark-alm-controller`](https://github.com/sparkdotfi/spark-alm-controller)
 - Mock contracts: `vat`, `usdsJoin`, `usds (layerZero oft)`, `sUsds`, `jug`, `usdsDai`, `dai`, `daiJoin`, `psmLite`
+
 
 ## Prerequisites
 
@@ -46,6 +48,7 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
 
 8. (optional) Commit generated `broadcast/SetUpAll.s.sol/11155111/run-latest.json` and `script/output/11155111/output-latest.json` to record deployed contract addresses 
 
+
 ## Environment Variables
 
 | Variable              | Description                                                                 |
@@ -56,7 +59,9 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
 | `FUJI_RPC_URL`        | RPC URL for Avalanche Fuji                                                  |
 | `ETHERSCAN_API_KEY`   | Etherscan api key to verify deployed contracts                              |
 
+
 ## Test `MainnetController.transferTokenLayerZero`
+
 To test LayerZero-related functionality, the following points MUST be executed in the provided order:
 (NOTE: This instruction is `Solana` specific)
 1. Follow README from [this repo](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana) UP UNTIL [`Deploy a sepolia OFT peer`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L255)
@@ -81,10 +86,6 @@ To test LayerZero-related functionality, the following points MUST be executed i
 7. Transaction can be found from: `https://testnet.layerzeroscan.com/address/{usdsTokenAddress}` 
    - Token should be transferred to recipient wallet on Solana when tx status is updated to `delivered`
 
-### How to deploy `oft` on Solana
-- Deploy program: https://docs.layerzero.network/v2/developers/solana/oft/program
-- Create OFT: https://docs.layerzero.network/v2/developers/solana/oft/account
-- Example repo: https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana
 
 ## Deploying to Other Chains
 
