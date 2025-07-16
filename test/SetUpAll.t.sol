@@ -20,6 +20,7 @@ interface MainnetControllerLike {
     function swapUSDSToUSDC(uint256 usdcAmount) external;
     function swapUSDCToUSDS(uint256 usdcAmount) external;
     function transferUSDCToCCTP(uint256 usdcAmount, uint32 destinationDomain) external;
+    function transferTokenLayerZero(address oftAddress, uint256 amount, uint32 destinationEndpointId) external;
 }
 
 contract SetUpAllTest is Test {
@@ -27,13 +28,13 @@ contract SetUpAllTest is Test {
 
     address relayer;
     address usdc;
-    address pocket;
     MockContracts mocks;
     AllocatorSharedInstance sharedInstance;
     AllocatorIlkInstance ilkInstance;
     ControllerInstance controllerInstance;
     bytes32 ilk;
     uint32 cctpDestinationDomain;
+    uint32 layerZeroDestinationEndpointId;
 
     uint256 constant WAD = 10 ** 18;
 
@@ -46,7 +47,7 @@ contract SetUpAllTest is Test {
         vm.selectFork(fujiFork);
 
         (address deployer,) = makeAddrAndKey("deployer");
-        address admin = pocket = deployer;
+        address admin = deployer;
 
         string memory config = ScriptTools.loadConfig("input");
         ilk = ScriptTools.stringToBytes32(config.readString(".ilk"));
@@ -54,14 +55,15 @@ contract SetUpAllTest is Test {
 
         relayer = config.readAddress(".relayer");
         cctpDestinationDomain = uint32(config.readUint(".cctpDestinationDomain"));
+        layerZeroDestinationEndpointId = uint32(config.readUint(".layerZeroDestinationEndpointId"));
 
-        // Fill up usdc to pocket
-        GodMode.setBalance(usdc, pocket, 1000 * 10 ** 6);
+        // Fill up usdc to admin (pocket)
+        GodMode.setBalance(usdc, admin, 1000 * 10 ** 6);
 
         vm.startPrank(deployer);
 
         // 1. Deploy mock contracts
-        mocks = SetUpAllLib.deployMockContracts(usdc, admin);
+        mocks = SetUpAllLib.deployMockContracts(usdc, admin, config.readAddress(".layerZeroEndpoint"));
 
         // 2. Deploy AllocatorSystem
         sharedInstance = AllocatorDeploy.deployShared(deployer, admin);
@@ -78,7 +80,11 @@ contract SetUpAllTest is Test {
             mocks: mocks,
             admin: admin,
             cctp: config.readAddress(".cctpTokenMessenger"),
-            relayers: relayers
+            relayers: relayers,
+            cctpDestinationDomain: cctpDestinationDomain,
+            cctpRecipient: config.readBytes32(".cctpRecipient"),
+            destinationEndpointId: layerZeroDestinationEndpointId,
+            layerZeroRecipient: config.readBytes32(".layerZeroRecipient")
         });
         controllerInstance = SetUpAllLib.setUpAllocatorAndALMController(params);
 
@@ -87,9 +93,10 @@ contract SetUpAllTest is Test {
             SetUpAllLib.RateLimitParams({
                 controllerInstance: controllerInstance,
                 usdcUnitSize: config.readUint(".usdcUnitSize"),
+                usds: address(mocks.usds),
                 susds: address(mocks.susds),
                 cctpDestinationDomain: cctpDestinationDomain,
-                cctpRecipient: config.readBytes32(".cctpRecipient")
+                destinationEndpointId: layerZeroDestinationEndpointId
             })
         );
 

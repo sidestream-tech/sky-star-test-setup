@@ -5,5 +5,8 @@
   "cctpTokenMessenger": "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",
   "cctpRecipient": "0x98997f46cd297f909c83b8b140d7725d00e61413ad5942760e8cb819acbcd7ce",
   "usdc": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+  "layerZeroEndpoint": "0x6EDCE65403992e310A62460808c4b910D972f10f",
+  "layerZeroDestinationEndpointId": "40168",
+  "layerZeroRecipient": "0x5f7459e38b1f267c8a6a63cb81d5eadfad3ebc5ae1d5b08d15d5121e2c21e26c",
   "relayer": "0x9b688229dfdf12dbc98d3096cc66c13fe11c81f4"
 }
