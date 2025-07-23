@@ -78,12 +78,31 @@ To test LayerZero-related functionality, the following points MUST be executed i
       2. Update `Treat Output As` to `HEX`
 3. `sky-star-test-setup` project: Add converted recipient address under `layerZeroRecipient` in `script/input/{chainId}/input.json`
 4. `sky-star-test-setup` project: Deploy OTF(`UsdsMock`) on EVM chain by following the rest of the steps in [`Quick Start`](#quick-start) section
-5. `lz-oapp` project: Wire deployed OTF(`UsdsMock`) on EVM to `oft` on Solana (deployed from Step 1) follow [`Initialize the OFT Program's SendConfig and ReceiveConfig Accounts`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L263) and [`Wire`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L273C5-L273C9) Sections
-6. Test `MainnetController.transferTokenLayerZero` 
+5. `lz-oapp` project: Copy `out/UsdsMock.sol/UsdsMock.json` from `sky-star-test-setup project` to `deployments/sepolia-testnet/UsdsMock.json` in lz oapp project and add address in the JSON like below
+    ```json
+    {
+        "address": "DEPLOYED_USDS_MOCK_ADDRESS",
+        /** Other deployment info like abi ...*/
+    }
+    ```
+6. `lz-oapp` project: Add `.chainId` file to `deployments/sepolia-testnet/`
+    ```sh
+    echo "11155111" > deployments/sepolia-testnet/.chainId
+    ```
+7. `lz-oapp` project: Add `PRIVATE_KEY` to `.env`
+8. `lz-oapp` project: Update `sepoliaContract.contractName` in `layerzero.config.ts`
+    ```ts
+    const sepoliaContract: OmniPointHardhat = {
+        eid: EndpointId.SEPOLIA_V2_TESTNET,
+        contractName: 'UsdsMock',
+    }
+    ```
+9.  `lz-oapp` project: Wire deployed OTF(`UsdsMock`) on EVM to `oft` on Solana (deployed from Step 1) follow [`Initialize the OFT Program's SendConfig and ReceiveConfig Accounts`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L263) and [`Wire`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L273C5-L273C9) Sections
+10. Test `MainnetController.transferTokenLayerZero` 
     1. Call `MainnetController.mintUsds` (eg. `MainnetController.minUsds(1000000000000000000)` - mint 1 usds)
     2. Call `MainnetController.transferTokenLayerZero` (eg. `MainnetController.transferTokenLayerZero{value: 0.0005}(evmUsdsAddress, 1000000000000000000, 40168)` - transfer 1 usds)
          - NOTE: native token needs to be send to cover LZ fee. The used values are example with safe bumper.
-7. Transaction can be found from: `https://testnet.layerzeroscan.com/address/{usdsTokenAddress}` 
+11. Transaction can be found from: `https://testnet.layerzeroscan.com/address/{usdsTokenAddress}` 
    - Token should be transferred to recipient wallet on Solana when tx status is updated to `delivered`
 
 
