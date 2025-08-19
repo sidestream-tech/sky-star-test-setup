@@ -62,49 +62,48 @@ To deploy and configure contracts to the Avalanche Fuji public testnet:
 
 ## Test `MainnetController.transferTokenLayerZero`
 
-To test LayerZero-related functionality, the following points can be executed in the provided order:
-(NOTE: This instruction is `Solana` specific)
+To test LayerZero-related functionality, follow these steps in order:
+**Note:** These instructions are specific to `Solana`.
 
-1. Convert Solana recipient address from base58 to hex value using [encoder](https://appdevtools.com/base58-encoder-decoder)
-      1. Select `Decode` tab
-      2. Update `Treat Output As` to `HEX`
-2. `sky-star-test-setup` project: Add converted recipient address under `layerZeroRecipient` in `script/input/{chainId}/input.json`
-3. `sky-star-test-setup` project: Deploy OTFs(`UsdsMock`, `sUsdsMock`) on EVM chain by following the rest of the steps in [`Quick Start`](#quick-start) section
-4. Create local clone of `lz-solana` example
+1. Convert the Solana recipient address from base58 to hex using [this decoder](https://appdevtools.com/base58-encoder-decoder):
+    1. Select the `Decode` tab.
+    2. Set `Treat Output As` to `HEX`.
+2. In the `sky-star-test-setup` project, add the converted recipient address under `layerZeroRecipient` in `script/input/{chainId}/input.json`.
+3. In the `sky-star-test-setup` project, deploy OTFs (`UsdsMock`, `sUsdsMock`) on the EVM chain by following the remaining steps in the [`Quick Start`](#quick-start) section.
+4. Clone the `lz-oapp` example locally:
     - https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#scaffold-this-example
-5. Finish [`Setup`](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#setup) and [`Build`](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#build) follow README from [this repo](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana)
-   - `lz-oapp` project can be created locally following [`Get the code`](https://github.com/LayerZero-Labs/devtools/blob/fd5014cb540d5f47e8698df435425c37777d46d2/examples/oft-solana/README.md?plain=1#L50) section
-6. `lz-oapp` project: Add `.chainId` file to `deployments/sepolia-testnet/`
+5. Complete the [`Setup`](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#setup) and [`Build`](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#build) steps in the README from [this repo](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana).
+6. In the `lz-oapp` project, add a `.chainId` file to `deployments/sepolia-testnet/`:
     ```sh
     mkdir -p deployments/sepolia-testnet && echo "11155111" > deployments/sepolia-testnet/.chainId
     ```
-7. `lz-oapp` project: Add `PRIVATE_KEY` to `.env` 
-8. Follow [`Deploy the Solana OFT Program`](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#deploy-the-solana-oft-program)
-   - Already deployed OFT program can be used: `ENP58syDWoSp6SS1CvndMgSB3daB9UpNYWmob7rzUh97`. (Please be mindful that `Upgrade Authority` belongs to program deployer)
-9. Follow [`Create the Solana OFT`](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#create-the-solana-oft)
-10. Update `sepolia OFT peer` information
-    1. `lz-oapp` project: Copy `out/UsdsMock.sol/UsdsMock.json` from `sky-star-test-setup project` to `deployments/sepolia-testnet/UsdsMock.json` in lz oapp project and add address in the JSON like below
+7. In the `lz-oapp` project, add EVM `PRIVATE_KEY` to `.env`.
+8. Follow the instructions to [`Deploy the Solana OFT Program`](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#deploy-the-solana-oft-program).
+    - You can use an already deployed OFT program: `ENP58syDWoSp6SS1CvndMgSB3daB9UpNYWmob7rzUh97`. (Note: The `Upgrade Authority` belongs to the program deployer.)
+9. Follow the steps to [`Create the Solana OFT`](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#create-the-solana-oft).
+10. Update the `sepolia OFT peer` information:
+    1. In the `lz-oapp` project, copy `out/UsdsMock.sol/UsdsMock.json` from the `sky-star-test-setup` project to `deployments/sepolia-testnet/UsdsMock.json` in the `lz-oapp` project, and add the address in the JSON as shown below:
         ```json
         {
-            "address": "DEPLOYED_USDS_MOCK_ADDRESS",
+            "address": "DEPLOYED_USDS_MOCK_ADDRESS"
             /** Other deployment info like abi ...*/
         }
         ```
-    2. `lz-oapp` project: Update `sepoliaContract.contractName` in `layerzero.config.ts`
+    2. In the `lz-oapp` project, update `sepoliaContract.contractName` in `layerzero.config.ts`:
         ```ts
         const sepoliaContract: OmniPointHardhat = {
             eid: EndpointId.SEPOLIA_V2_TESTNET,
             contractName: 'UsdsMock',
         }
         ```
-11. `lz-oapp` project: Wire deployed OTF(`UsdsMock`) on EVM to `oft` on Solana (deployed from Step 9) follow [`Enable Messaging`](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#enable-messaging)
-12. Test `MainnetController.transferTokenLayerZero` 
-    1. Call `MainnetController.mintUsds` (eg. `MainnetController.minUsds(1000000000000000000)` - mint 1 usds)
-    2. Call `MainnetController.transferTokenLayerZero` (eg. `MainnetController.transferTokenLayerZero{value: 0.0005}(evmUsdsAddress, 1000000000000000000, 40168)` - transfer 1 usds)
-         - NOTE: native token needs to be send to cover LZ fee. The used values are example with safe bumper.
-13. Transaction can be found from: `https://testnet.layerzeroscan.com/address/{usdsTokenAddress}` 
-   - Token should be transferred to recipient wallet on Solana when tx status is updated to `delivered`
-14. Set up `sUsdsMock` in the same way (step 9 - step 13)
+11. In the `lz-oapp` project, wire the deployed OTF (`UsdsMock`) on EVM to the `oft` on Solana (deployed in Step 9) by following the [`Enable Messaging`](https://github.com/LayerZero-Labs/devtools/tree/main/examples/oft-solana#enable-messaging) instructions.
+12. Test `MainnetController.transferTokenLayerZero`:
+    1. Call `MainnetController.mintUsds` (e.g., `MainnetController.mintUsds(1000000000000000000)` to mint 1 USDS).
+    2. Call `MainnetController.transferTokenLayerZero` (e.g., `MainnetController.transferTokenLayerZero{value: 0.0005}(evmUsdsAddress, 1000000000000000000, 40168)` to transfer 1 USDS).
+        - **Note:** Native tokens must be sent to cover the LayerZero fee. The values above are examples with a safe buffer.
+13. The transaction can be found at: `https://testnet.layerzeroscan.com/address/{usdsTokenAddress}`.
+    - The token should be transferred to the recipient wallet on Solana once the transaction status is updated to `delivered`.
+14. Set up `sUsdsMock` in the same way (repeat steps 9–13).
 
 
 ## Deploying to Other Chains
