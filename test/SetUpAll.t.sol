@@ -136,13 +136,13 @@ contract SetUpAllTest is Test {
         controller.mintUSDS(10 * WAD); // Mint 10 USDS
 
         // Deposit into ERC4626
-        vm.assertEq(ERC4626Mock(mocks.susds).shareBalance(almProxy), 0, "Share balance before deposit should be 0");
+        vm.assertEq(ERC4626Mock(mocks.susds).balanceOf(almProxy), 0, "Share balance before deposit should be 0");
 
         vm.prank(relayer);
         controller.depositERC4626(mocks.susds, 5 * WAD); // Deposit 5 USDS
         vm.assertEq(usds.balanceOf(almProxy), 5 * WAD, "USDS balance after deposit should be 5 WAD");
         vm.assertEq(
-            ERC4626Mock(mocks.susds).shareBalance(almProxy), 5 * WAD, "Share balance after deposit should be 5 WAD"
+            ERC4626Mock(mocks.susds).balanceOf(almProxy), 5 * WAD, "Share balance after deposit should be 5 WAD"
         );
 
         // Withdraw from ERC4626
@@ -150,7 +150,7 @@ contract SetUpAllTest is Test {
         uint256 shares = controller.withdrawERC4626(mocks.susds, 3 * WAD); // Withdraw 3 USDS
         vm.assertEq(shares, 3 * WAD, "Withdrawn shares should be 3 WAD");
         vm.assertEq(
-            ERC4626Mock(mocks.susds).shareBalance(almProxy), 2 * WAD, "Share balance after withdrawal should be 2 WAD"
+            ERC4626Mock(mocks.susds).balanceOf(almProxy), 2 * WAD, "Share balance after withdrawal should be 2 WAD"
         );
         vm.assertEq(usds.balanceOf(almProxy), 8 * WAD, "USDS balance after withdrawal should be 8 WAD");
 
@@ -158,9 +158,7 @@ contract SetUpAllTest is Test {
         vm.prank(relayer);
         shares = controller.redeemERC4626(mocks.susds, 2 * WAD); // Redeem 2 USDS
         vm.assertEq(shares, 2 * WAD, "Redeemed shares should be 2 WAD");
-        vm.assertEq(
-            ERC4626Mock(mocks.susds).shareBalance(almProxy), 0, "Share balance after redemption should be 0 WAD"
-        );
+        vm.assertEq(ERC4626Mock(mocks.susds).balanceOf(almProxy), 0, "Share balance after redemption should be 0 WAD");
         vm.assertEq(usds.balanceOf(almProxy), 10 * WAD, "USDS balance after redemption should be 10 WAD");
     }
 

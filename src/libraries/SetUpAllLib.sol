@@ -98,7 +98,7 @@ library SetUpAllLib {
         mocks.daiUsds = address(new DaiUsdsMock(mocks.daiJoin, mocks.usdsJoin));
         JugMock jug = new JugMock(VatMock(mocks.vat));
         mocks.jug = address(jug);
-        mocks.susds = address(new SusdsMock(GemMock(mocks.usds)));
+        mocks.susds = address(new SusdsMock(UsdsMock(mocks.usds), layerZeroEndpoint));
         mocks.psm = address(new LitePsmMock(psmIlk, usdc, mocks.daiJoin, pocket));
 
         // 2. Rely Usds on UsdsJoin
@@ -239,10 +239,16 @@ library SetUpAllLib {
         rateLimits.setRateLimitData(domainKey, maxAmount6, slope6);
         rateLimits.setUnlimitedRateLimitData(controller.LIMIT_USDC_TO_CCTP());
 
-        // transferTokenLayerZero rate limits
+        // Usds transferTokenLayerZero rate limits
         rateLimits.setRateLimitData(
             keccak256(abi.encode(controller.LIMIT_LAYERZERO_TRANSFER(), params.usds, params.destinationEndpointId)),
             10_000_000e18, // 10 million USDS
+            0
+        );
+        // sUsds transferTokenLayerZero rate limits
+        rateLimits.setRateLimitData(
+            keccak256(abi.encode(controller.LIMIT_LAYERZERO_TRANSFER(), params.susds, params.destinationEndpointId)),
+            10_000_000e18, // 10 million sUSDS
             0
         );
     }
